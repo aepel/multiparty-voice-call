@@ -13,21 +13,29 @@ const { v4: uuidv4 } = require('uuid')
 module.exports = async server => {
   const io = new Server(server, {
     cors: {
-      origin: ['*', 'http://172.27.250.147:3001'],
+      origin: ['*', 'https://172.27.250.147:3001'],
     },
   })
 
   // Set up the socket.io connection
-  const router = await setUpMediaSoupServer()
-  io.on('connection', socket => {
-    console.log('a user connected', socket)
+
+  io.on('connection', async socket => {
+    const router = await setUpMediaSoupServer()
+    console.log('a user connected id', socket.id)
     socket.peerId = uuidv4()
-    console.log('the socket has the peer id', socket)
+    console.log('the socket has the peer id', socket.peerId)
 
     // Create a new mediasoup transport for the new client
     let transport = null
-    socket.on('createTransport', async (data, callback) => createTransport(data, callback, router, transport))
+    socket.on('createTransport', async (data, _, callback) => {
+      transport = await createTransport(data, callback, router, transport)
+    })
 
+    socket.on('getRouterRtpCapabilities', async (arg1, arg2, callback) => {
+      callback(router.rtpCapabilities)
+    })
+
+    socket.on('produce', async (...args) => console.log('transport is producing', args))
     // Connect the transport to the client
     socket.on('connectTransport', async (data, callback) => connectTransport(data, callback, transport))
 
@@ -42,12 +50,12 @@ module.exports = async server => {
     socket.on('recordVideo', recordVideo)
     // Start recording
     let stream = null
-    socket.on('startRecording', startRecording(stream, transport, router))
+    // socket.on('startRecording', startRecording(stream, transport, router))
 
     // Stop recording and save the file
-    socket.on('stopRecording', stopRecording(stream))
+    // socket.on('stopRecording', stopRecording(stream))
 
     // Disconnect the client and remove their mediasoup objects
-    socket.on('disconnect', disconnect(producer, transport))
+    socket.on('disconnect', async () => disconnect(producer, transport))
   })
 }

@@ -1,0 +1,4 @@
+yarn run v1.22.19
+$ HTTPS=true && PORT=3033 && SSL_CRT_FILE=./ssl/server.crt && SSL_KEY_FILE=./ssl/server.key  react-scripts start
+Starting the development server...
+

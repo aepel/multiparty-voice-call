@@ -1,12 +1,13 @@
 // Require the necessary modules
 const express = require('express')
 const app = express()
-const http = require('http')
-const server = http.createServer(app)
+const https = require('https')
+const fs = require('fs')
 const setUpSocketIo = require('./lib/socket')
 const cors = require('cors')
 const compression = require('compression')
 const bodyParser = require('body-parser')
+const videoCallService = require('./lib/services/videoCallService')
 
 const main = async () => {
   // Set up the Express server
@@ -19,14 +20,19 @@ const main = async () => {
   app.get('/', (req, res) => {
     res.send('Server up and running')
   })
-
+  const options = {
+    key: fs.readFileSync('./server/ssl/server.key', 'utf-8'),
+    cert: fs.readFileSync('./server/ssl/server.crt', 'utf-8'),
+  }
   // Start the server
+  const server = https.createServer(options, app)
 
-  await setUpSocketIo(server).catch(err => console.error(err))
   console.log(`socket IO configured`)
-  const PORT = process.env.PORT || 3000
+  const PORT = process.env.PORT || 3003
+  await videoCallService.initializeConnectivity(server)
   server.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`)
+    console.log(`https://localhost:${PORT}`)
   })
 }
 

@@ -2,8 +2,8 @@ import React, { useState, useContext } from 'react'
 import SocketContext from '../context/SocketContext'
 
 const VideoCall = ({ RecordButtons }) => {
-  const [enableRecording, setEnableRecording] = useState(false)
-  const [enableStopRecording, setEnableStopRecording] = useState(false)
+  const [enableRecording] = useState(false)
+  const [enableStopRecording] = useState(false)
   const { error, videoRef } = useContext(SocketContext)
   return (
     <div>

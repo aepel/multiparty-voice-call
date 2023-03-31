@@ -5,6 +5,7 @@ const {
   createTransport,
   connectTransport,
   recordVideo,
+  createRouter,
 } = require('../mediasoup')
 const { Server } = require('socket.io')
 
@@ -14,7 +15,7 @@ let producerTransport
 let consumerTransport
 let producer
 let consumer
-module.exports = async (server, router) => {
+module.exports = async server => {
   const io = new Server(server, {
     cors: {
       origin: ['*', 'https://localhost:3033', 'https://172.27.250.147:3033'],
@@ -28,13 +29,15 @@ module.exports = async (server, router) => {
 
     //When the client socket is disconnected
     socket.on('disconnect', async () => {
-      await disconnect(producer, transport)
+      await disconnect(producer, producerTransport)
       console.log('peer disconnected')
     })
 
+    router = await createRouter()
     // Client emits a request for RTP Capabilities
     // This event responds to the request
     socket.on('getRtpCapabilities', callback => {
+      console.log('router.rtpCapabilities', router.rtpCapabilities)
       const rtpCapabilities = router.rtpCapabilities
 
       console.log('rtp Capabilities', rtpCapabilities)
@@ -145,7 +148,7 @@ module.exports = async (server, router) => {
         listenIps: [
           {
             ip: '0.0.0.0', // replace with relevant IP address
-            announcedIp: '127.0.0.1',
+            announcedIp: '172.27.250.147',
           },
         ],
         enableUdp: true,

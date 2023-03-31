@@ -1,13 +1,19 @@
-// import { useContext } from 'react'
-
-// import SocketContext from '../context/SocketContext'
-const useMeeting = () => {
+import { useContext, useState } from 'react'
+import {
+  getRtpCapabilities,
+  createSendTransport,
+  connectSendTransport,
+  createRecvTransport,
+  connectRecvTransport,
+} from '../mediasoup'
+import { SocketContext } from '../context/SocketContext'
+const useMeeting = (callerVideoRef, remoteVideoRef) => {
   // const [stream, setStream] = useState(null)
   // const [recorder, setRecorder] = useState(null)
   // const [chunks, setChunks] = useState([])
   // const [me, setMe] = useState('')
   // const [name, setName] = useState('')
-
+  let localStream
   // const [caller, setCaller] = useState('')
   // const [callerSignal, setCallerSignal] = useState()
   // const [callAccepted, setCallAccepted] = useState(false)
@@ -16,21 +22,28 @@ const useMeeting = () => {
   // const myVideo = useRef()
   // const userVideo = useRef()
   // const connectionRef = useRef()
-
-  const getLocalStream = callerVideoRef => {
+  const { socket } = useContext(SocketContext)
+  const getLocalStream = () => {
     navigator.mediaDevices
       .getUserMedia({
-        audio: true,
+        audio: false,
         video: true,
       })
       .catch(error => {
         console.log(error.message)
       })
       .then(streamSuccess => {
-        callerVideoRef.srcObject = streamSuccess
-        console.log('🚀 ~ file: useMeeting.js:31 ~ getLocalStream ~ callerVideoRef:', callerVideoRef)
-        console.log('🚀 ~ file: useMeeting.js:31 ~ getLocalStream ~ streamSuccess:', streamSuccess)
+        callerVideoRef.current.srcObject = streamSuccess
+        localStream = streamSuccess
       })
+  }
+  const joinRoom = async () => {
+    console.log('socket')
+    getRtpCapabilities(socket)
+
+    await createSendTransport(socket, localStream)
+
+    await createRecvTransport(socket, remoteVideoRef)
   }
   // const callUser = id => {
   //   const peer = new Peer({
@@ -97,6 +110,6 @@ const useMeeting = () => {
   //   userVideo,
   //   connectionRef,
   // }
-  return { getLocalStream }
+  return { getLocalStream, joinRoom }
 }
 export default useMeeting

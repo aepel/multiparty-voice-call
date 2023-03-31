@@ -30,7 +30,8 @@ const SocketProvider = ({ children }) => {
       socket.disconnect()
     }
   }, [socket, consumer, producer, transport])
-
+  const isConnected = () => !socket.connected || !socket.connecting
+  const reconnect = () => (!socket.connected || !socket.connecting ? socket.connect() : null)
   // // Clean up on unmount
 
   // // useEffect(() => {
@@ -261,7 +262,9 @@ const SocketProvider = ({ children }) => {
   // // }
 
   return (
-    <SocketContext.Provider value={{ transport, producer, socket, error, videoRef }}>{children}</SocketContext.Provider>
+    <SocketContext.Provider value={{ transport, producer, socket, error, videoRef, isConnected, reconnect }}>
+      {children}
+    </SocketContext.Provider>
   )
 }
 

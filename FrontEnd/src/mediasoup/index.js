@@ -136,22 +136,42 @@ const connectSendTransport = async stream => {
   // https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
   // this action will trigger the 'connect' and 'produce' events above
   console.log('🚀 ~ file: index.js:137 ~ connectSendTransport ~ producerTransport:', producerTransport)
-  producer = await producerTransport.produce({
-    track: stream.getVideoTracks()[0],
-    ...params,
-  })
+  // producer = await producerTransport.produce({
+  //   track: stream.getVideoTracks()[0],
+  //   ...params,
+  // })
+  const videoTrack = stream.getVideoTracks()[0]
+  const audioTrack = stream.getAudioTracks()[0]
 
-  producer.on('trackended', () => {
-    console.log('track ended')
+  // If there is a video track start sending it to the server
+  if (videoTrack) {
+    const videoProducer = await producerTransport.produce({ track: videoTrack, ...params })
+    videoProducer.on('trackended', () => {
+      console.log('track ended')
 
-    // close video track
-  })
+      // close video track
+    })
+    videoProducer.on('transportclose', () => {
+      console.log('transport ended')
 
-  producer.on('transportclose', () => {
-    console.log('transport ended')
+      // close video track
+    })
+  }
 
-    // close video track
-  })
+  // if there is a audio track start sending it to the server
+  if (audioTrack) {
+    const audioProducer = producerTransport.produce({ track: audioTrack, ...params })
+    audioProducer.on('trackended', () => {
+      console.log('track ended')
+
+      // close video track
+    })
+    audioProducer.on('transportclose', () => {
+      console.log('transport ended')
+
+      // close video track
+    })
+  }
 }
 
 const createRecvTransport = async (socket, remoteVideoRef) => {

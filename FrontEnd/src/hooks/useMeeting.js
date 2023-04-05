@@ -1,9 +1,9 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import Mediasoup from '../mediasoup'
 import { SocketContext } from '../context/SocketContext'
 const useMeeting = (localVideoRef, newConsumerEventCallback) => {
   let localStream
-  let callerId
+  const [callerId, setCallerId] = useState(null)
   const { socket } = useContext(SocketContext)
   const mediasoup = new Mediasoup(socket, newConsumerEventCallback)
   const getLocalStream = () => {
@@ -18,11 +18,13 @@ const useMeeting = (localVideoRef, newConsumerEventCallback) => {
       .then(streamSuccess => {
         localVideoRef.current.srcObject = streamSuccess
         localStream = streamSuccess
-        callerId = this.socket.id
+
         console.log('🚀 ~ file: useMeeting.js:22 ~ getLocalStream ~ this.socket.id:', this.socket.id)
       })
   }
-
+  useEffect(() => {
+    setCallerId(socket.id)
+  }, [])
   const DEFAULT_ROOM = 'THEROOM'
   const joinRoom = async (roomName = DEFAULT_ROOM) => {
     console.log('socket', socket.id)

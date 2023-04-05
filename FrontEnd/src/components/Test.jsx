@@ -17,10 +17,6 @@ const Test = () => {
   })
   const { joinRoom, callerId } = useMeeting(localVideoRef, addVideoBoxCallBack)
 
-  useEffect(() => {
-    setConnectionId(callerId)
-  }, [callerId])
-
   // Initialize Mediasoup device
 
   // // Join the room and start sending our stream

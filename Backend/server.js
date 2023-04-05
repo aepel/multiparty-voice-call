@@ -20,6 +20,7 @@ const main = async () => {
   app.get('/', (req, res) => {
     res.send('Server up and running')
   })
+
   const options = {
     key: fs.readFileSync('./server/ssl/server.key', 'utf-8'),
     cert: fs.readFileSync('./server/ssl/server.crt', 'utf-8'),

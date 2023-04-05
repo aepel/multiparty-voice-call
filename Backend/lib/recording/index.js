@@ -11,11 +11,15 @@ const startRecording = async (stream, transport, router) => {
 }
 const disconnect = async (producer, transport) => {
   console.log('user disconnected')
-  if (producer) {
-    await producer.close()
-  }
-  if (transport) {
-    await transport.close()
+  try {
+    if (producer) {
+      await producer.close()
+    }
+    if (transport) {
+      await transport.close()
+    }
+  } catch (ex) {
+    console.error(ex)
   }
 }
 const stopRecording = async stream => {

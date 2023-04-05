@@ -1,28 +1,11 @@
-import { useContext, useState } from 'react'
-import {
-  getRtpCapabilities,
-  createSendTransport,
-  connectSendTransport,
-  createRecvTransport,
-  connectRecvTransport,
-} from '../mediasoup'
+import { useContext } from 'react'
+import Mediasoup from '../mediasoup'
 import { SocketContext } from '../context/SocketContext'
-const useMeeting = (callerVideoRef, remoteVideoRef) => {
-  // const [stream, setStream] = useState(null)
-  // const [recorder, setRecorder] = useState(null)
-  // const [chunks, setChunks] = useState([])
-  // const [me, setMe] = useState('')
-  // const [name, setName] = useState('')
+const useMeeting = (localVideoRef, newConsumerEventCallback) => {
   let localStream
-  // const [caller, setCaller] = useState('')
-  // const [callerSignal, setCallerSignal] = useState()
-  // const [callAccepted, setCallAccepted] = useState(false)
-  // const [idToCall, setIdToCall] = useState('')
-  // const [callEnded, setCallEnded] = useState(false)
-  // const myVideo = useRef()
-  // const userVideo = useRef()
-  // const connectionRef = useRef()
+
   const { socket } = useContext(SocketContext)
+  const mediasoup = new Mediasoup(socket, newConsumerEventCallback)
   const getLocalStream = () => {
     navigator.mediaDevices
       .getUserMedia({
@@ -33,83 +16,22 @@ const useMeeting = (callerVideoRef, remoteVideoRef) => {
         console.log(error.message)
       })
       .then(streamSuccess => {
-        callerVideoRef.current.srcObject = streamSuccess
+        localVideoRef.current.srcObject = streamSuccess
         localStream = streamSuccess
       })
   }
-  const joinRoom = async () => {
-    console.log('socket')
-    getRtpCapabilities(socket)
+  const DEFAULT_ROOM = 'THEROOM'
+  const joinRoom = async (roomName = DEFAULT_ROOM) => {
+    socket.on('connection-success', ({ socketId }) => {
+      console.log(socketId)
+      getLocalStream()
+    })
+    console.log('🚀 ~ file: useMeeting.js:25 ~ joinRoom ~ joinRoom:')
 
-    await createSendTransport(socket, localStream)
+    await mediasoup.joinRoom(roomName)
 
-    await createRecvTransport(socket, remoteVideoRef)
+    await mediasoup.createSendTransport(localStream)
   }
-  // const callUser = id => {
-  //   const peer = new Peer({
-  //     initiator: true,
-  //     trickle: false,
-  //     stream: stream,
-  //   })
-  //   peer.on('signal', data => {
-  //     socket.emit('callUser', {
-  //       userToCall: id,
-  //       signalData: data,
-  //       from: me,
-  //       name: name,
-  //     })
-  //   })
-  //   peer.on('stream', stream => {
-  //     userVideo.current.srcObject = stream
-  //   })
-  //   socket.on('callAccepted', signal => {
-  //     setCallAccepted(true)
-  //     peer.signal(signal)
-  //   })
-
-  //   connectionRef.current = peer
-  // }
-
-  // const startRecording = () => {
-  //   recorder.start()
-  // }
-
-  // const stopRecording = () => {
-  //   recorder.stop()
-  // }
-
-  // const answerCall = () => {
-  //   setCallAccepted(true)
-  //   const peer = new Peer({
-  //     initiator: false,
-  //     trickle: false,
-  //     stream: stream,
-  //   })
-  //   peer.on('signal', data => {
-  //     socket.emit('answerCall', { signal: data, to: caller })
-  //   })
-  //   peer.on('stream', stream => {
-  //     userVideo.current.srcObject = stream
-  //   })
-
-  //   peer.signal(callerSignal)
-  //   connectionRef.current = peer
-  // }
-
-  // const leaveCall = () => {
-  //   setCallEnded(true)
-  //   connectionRef.current.destroy()
-  // }
-  // return {
-  //   leaveCall,
-  //   answerCall,
-  //   startRecording,
-  //   stopRecording,
-  //   callUser,
-  //   myVideo,
-  //   userVideo,
-  //   connectionRef,
-  // }
   return { getLocalStream, joinRoom }
 }
 export default useMeeting

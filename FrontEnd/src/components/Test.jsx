@@ -8,10 +8,13 @@ const Test = () => {
   const localVideoRef = useRef()
   const [callers, setCallers] = useState([])
   const [connectionId, setConnectionId] = useState([])
-  const addVideoBoxCallBack = React.useCallback(({ kind, producerId, stream }) => {
-    console.log('agregando stream', [...callers, { producerId, stream, kind }])
-    setCallers([...callers, { producerId, stream, kind }])
-  })
+  const addVideoBoxCallBack = React.useCallback(
+    ({ kind, producerId, stream }) => {
+      console.log('agregando stream', [...callers, { producerId, stream, kind }])
+      setCallers(prevCallers => [...prevCallers, { producerId, stream, kind }])
+    },
+    [setCallers, callers]
+  )
   const { joinRoom, callerId } = useMeeting(localVideoRef, addVideoBoxCallBack)
 
   // Initialize Mediasoup device
@@ -37,6 +40,7 @@ const Test = () => {
         <video ref={localVideoRef} autoPlay playsInline width={300} height={300} style={{ border: '1px solid' }} />
       </Grid>
       <Grid item xs={4}>
+        {console.log(callers)}
         {callers.map(caller => {
           console.log('caller', caller)
           return caller.kind === 'audio' ? (

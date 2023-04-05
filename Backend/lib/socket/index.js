@@ -56,10 +56,14 @@ module.exports = async (server, createRouterFromPoolFunction) => {
       console.log(`just joined, id ${id} ${roomName}, ${socketId}`)
       _.forEach(
         (rooms[roomName].producers || []).filter(producerData => producerData.socketId !== socketId),
-        ({ socketId: producerSocketId }) => {
-          const producerSocket = peers[producerSocketId].socket
-          // use socket to send producer id to producer
-          producerSocket.emit('new-producer', { producerId: id })
+        ({ socketId: producerSocketId, id: producerId }) => {
+          try {
+            const producerSocket = peers[producerSocketId].socket
+            // use socket to send producer id to producer
+            producerSocket.emit('new-producer', { producerId: id })
+          } catch (ex) {
+            rooms[roomName].removeProducers([producerId])
+          }
         }
       )
     }

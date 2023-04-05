@@ -1,12 +1,14 @@
 // Class to hold peer data
 
 module.exports = class Peer {
-  constructor(sessionId, roomName) {
-    this.sessionId = sessionId
-    this.roomName = roomName
+  socketId = null
+  #roomName = null
+  constructor(socketId, roomName) {
+    this.socketId = socketId
+    this.#roomName = roomName
     this.transports = []
     this.producers = []
-    this.consumers = []
+    this.consumers = {}
     this.process = undefined
     this.remotePorts = []
     this.peerDetails = {
@@ -29,7 +31,7 @@ module.exports = class Peer {
     this.producers.push(producer)
   }
   addConsumer(consumer) {
-    this.consumers.push(consumer)
+    this.consumers[consumer.id] = consumer
   }
 
   getProducer(producerId) {
@@ -45,5 +47,13 @@ module.exports = class Peer {
 
   getConsumersByKind(kind) {
     return this.consumers.filter(consumer => consumer.kind === kind)
+  }
+
+  getConsumerById(consumerId) {
+    console.log('-------------consumers-------------', this.consumers)
+    return this.consumers.find(consumer => consumer.id === consumerId)
+  }
+  get roomName() {
+    return this.#roomName
   }
 }

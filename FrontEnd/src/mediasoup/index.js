@@ -10,7 +10,7 @@ module.exports = class Mediasoup {
     this.producerTransport = null
     this.consumerTransports = []
     this.consumingTransports = []
-
+    this.serverProducerId = null
     this.newConsumerEventCallback = newConsumerEventCallback
     this.audioProducer = null
     this.videoProducer = null
@@ -64,50 +64,41 @@ module.exports = class Mediasoup {
     }
   }
 
-  joinRoom = roomName => {
-    this.socket.emit('joinRoom', { roomName }, async data => {
-      console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
-      // we assign to local variable and will be used when
-      // loading the client Device (see createDevice above)
-      this.rtpCapabilities = data.rtpCapabilities
+  joinRoom = async roomName => {
+    return await new Promise((resolve, reject) => {
+      try {
+        console.log('joinRoom clicked', this.socket)
+        this.socket.emit('joinRoom', { roomName }, async data => {
+          console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
+          // we assign to local variable and will be used when
+          // loading the client Device (see createDevice above)
+          this.rtpCapabilities = data.rtpCapabilities
 
-      // once we have rtpCapabilities from the Router, create Device
-      await this.createDevice()
+          // once we have rtpCapabilities from the Router, create Device
+          await this.createDevice()
+          resolve()
+        })
+      } catch (error) {
+        console.log(error)
+        reject(error)
+      }
     })
   }
+  // server informs the client of a new producer just joined
 
-  getRtpCapabilities = roomName => {
-    if (!this.socket.connected || !this.socket.connecting) this.socket.connect()
-
-    // server informs the client of a new producer just joined
-    this.socket.on('new-producer', ({ producerId }) => this.signalNewConsumerTransport(producerId))
-    // make a request to the server for Router RTP Capabilities
-    // see server's socket.on('getRtpCapabilities', ...)
-    // the server sends back data object which contains rtpCapabilities
-    this.socket.emit('createRoom', { roomName }, data => {
-      console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
-
-      // we assign to local variable and will be used when
-      // loading the client Device (see createDevice above)
-      this.rtpCapabilities = data.rtpCapabilities
-
-      // once we have rtpCapabilities from the Router, create Device
-      this.createDevice()
-    })
-  }
-
-  getProducers = () => {
+  getProducers = actualProducerId => {
     this.socket.emit('getProducers', producerIds => {
-      console.log(producerIds)
+      console.log('******There is a new producer******', producerIds)
       // for each of the producer create a consumer
       // producerIds.forEach(id => signalNewConsumerTransport(id))
-      producerIds.forEach(this.signalNewConsumerTransport)
+      producerIds.filter(prod => prod.id !== actualProducerId).forEach(this.signalNewConsumerTransport)
     })
   }
 
   createSendTransport = localStream => {
     // see server's socket.on('createWebRtcTransport', sender?, ...)
     // this is a call from Producer, so sender = true
+    console.log('createSendTransport', this.socket.id)
     this.socket.emit('createWebRtcTransport', { consumer: false }, async ({ params }) => {
       // The server sends back params needed
       // to create Send Transport on the client side
@@ -116,7 +107,7 @@ module.exports = class Mediasoup {
         return
       }
 
-      console.log(`createWebRtcTransport params:`, params)
+      console.log(`createWebRtcTransport params:`, params, localStream)
 
       // creates a new WebRTC Transport to send media
       // based on the server's producer transport params
@@ -165,12 +156,17 @@ module.exports = class Mediasoup {
 
               // if producers exist, then join room
               console.log('Transport-produce getProducers', producersExist)
-              if (producersExist) this.getProducers()
+              this.serverProducerId = id
+              if (producersExist) this.getProducers(id)
             }
           )
         } catch (error) {
           errback(error)
         }
+      })
+      this.socket.on('new-producer', ({ producerId, socketId = null }) => {
+        console.log('remoteSocketId', socketId)
+        if (socketId !== this.socket.id) this.signalNewConsumerTransport(producerId, socketId)
       })
       await this.connectSendTransport(localStream)
     })
@@ -181,43 +177,47 @@ module.exports = class Mediasoup {
     // to send media to the Router
     // https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
     // this action will trigger the 'connect' and 'produce' events above
-    console.log('🚀 ~ file: index.js:137 ~ connectSendTransport ~ producerTransport:', this.producerTransport.id)
     // producer = await producerTransport.produce({
     //   track: stream.getVideoTracks()[0],
     //   ...params,
     // })
-    let audioParams = { track: stream.getAudioTracks()[0] }
-    let videoParams = { track: stream.getVideoTracks()[0], ...this.params }
+    try {
+      // let audioParams = { track: stream.getAudioTracks()[0] }
 
-    const audioProducer = await this.producerTransport.produce(audioParams)
-    const videoProducer = await this.producerTransport.produce(videoParams)
+      let videoParams = { track: stream.getVideoTracks()[0], ...this.params }
 
-    audioProducer.on('trackended', () => {
-      console.log('audio track ended')
+      // const audioProducer = await this.producerTransport.produce(audioParams)
+      const videoProducer = await this.producerTransport.produce(videoParams)
 
-      // close audio track
-    })
+      // audioProducer.on('trackended', () => {
+      //   console.log('audio track ended')
 
-    audioProducer.on('transportclose', () => {
-      console.log('audio transport ended')
+      //   // close audio track
+      // })
 
-      // close audio track
-    })
+      // audioProducer.on('transportclose', () => {
+      //   console.log('audio transport ended')
 
-    videoProducer.on('trackended', () => {
-      console.log('video track ended')
+      //   // close audio track
+      // })
 
-      // close video track
-    })
+      videoProducer.on('trackended', () => {
+        console.log('video track ended')
 
-    videoProducer.on('transportclose', () => {
-      console.log('video transport ended')
+        // close video track
+      })
 
-      // close video track
-    })
+      videoProducer.on('transportclose', () => {
+        console.log('video transport ended')
+
+        // close video track
+      })
+    } catch (ex) {
+      console.error('🚀 ~ file: index.js:209 ~ Mediasoup ~ ex:', ex)
+    }
   }
 
-  signalNewConsumerTransport = async remoteProducerId => {
+  signalNewConsumerTransport = async (remoteProducerId, remoteSocketId) => {
     //check if we are already consuming the remoteProducerId
     if (this.consumingTransports.includes(remoteProducerId)) return
     this.consumingTransports.push(remoteProducerId)
@@ -264,8 +264,8 @@ module.exports = class Mediasoup {
         }
       })
       console.log('*****************************Connect called********************')
-
-      await this.connectRecvTransport(consumerTransport, remoteProducerId, params.id)
+      if (remoteProducerId !== this.serverProducerId)
+        await this.connectRecvTransport(consumerTransport, remoteProducerId, params.id)
     })
   }
 
@@ -288,7 +288,7 @@ module.exports = class Mediasoup {
           return
         }
 
-        console.log(`Consumer Params ${params}`)
+        console.log(`Consumer Params ${params}`, params)
 
         // then consume with the local consumer transport
         // which creates a consumer
@@ -308,7 +308,7 @@ module.exports = class Mediasoup {
         // destructure and retrieve the video track from the producer
         const { track } = this.consumer
         this.producers.set(remoteProducerId, new MediaStream([track]))
-        console.log('------------------- lets dispatch', this.newConsumerEventCallback)
+
         if (this.newConsumerEventCallback)
           this.newConsumerEventCallback({
             kind: params.kind,
@@ -320,7 +320,7 @@ module.exports = class Mediasoup {
 
         // the server consumer started with media paused
         // so we need to inform the server to resume
-        this.socket.emit('consumer-resume', { serverConsumerId: params.serverConsumerId })
+        this.socket.emit('consumer-resume', { serverConsumerId: params.id })
       }
     )
   }

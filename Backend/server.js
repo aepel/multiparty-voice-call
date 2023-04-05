@@ -8,7 +8,7 @@ const cors = require('cors')
 const compression = require('compression')
 const bodyParser = require('body-parser')
 const videoCallService = require('./lib/services/videoCallService')
-
+const path = require('path')
 const main = async () => {
   // Set up the Express server
   app.use(cors())
@@ -22,8 +22,8 @@ const main = async () => {
   })
 
   const options = {
-    key: fs.readFileSync('./server/ssl/server.key', 'utf-8'),
-    cert: fs.readFileSync('./server/ssl/server.crt', 'utf-8'),
+    key: fs.readFileSync(path.join(__dirname, 'server/ssl/server.key'), 'utf-8'),
+    cert: fs.readFileSync(path.join(__dirname, 'server/ssl/server.crt'), 'utf-8'),
   }
   // Start the server
   const server = https.createServer(options, app)

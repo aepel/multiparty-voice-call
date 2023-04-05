@@ -22,9 +22,9 @@ const useMeeting = (localVideoRef, newConsumerEventCallback) => {
 
   const DEFAULT_ROOM = 'THEROOM'
   const joinRoom = async (roomName = DEFAULT_ROOM) => {
-    console.log('socket', socket.id)
-    await mediasoup.joinRoom(roomName)
     await getLocalStream()
+
+    await mediasoup.joinRoom(roomName)
 
     console.log('🚀 ~ file: useMeeting.js:30 ~ joinRoom ~ localStream:', localStream)
     mediasoup.createSendTransport(localStream)

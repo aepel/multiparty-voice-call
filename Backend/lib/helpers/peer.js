@@ -3,8 +3,10 @@
 module.exports = class Peer {
   socketId = null
   #roomName = null
-  constructor(socketId, roomName) {
-    this.socketId = socketId
+  socket = null
+  constructor(socket, roomName) {
+    this.socketId = socket.id
+    this.socket = socket
     this.#roomName = roomName
     this.transports = []
     this.producers = []

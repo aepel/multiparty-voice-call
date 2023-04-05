@@ -184,6 +184,7 @@ module.exports = class Mediasoup {
     try {
       // let audioParams = { track: stream.getAudioTracks()[0] }
 
+      console.log('🚀 ~ file: index.js:189 ~ Mediasoup ~ stream:', stream)
       let videoParams = { track: stream.getVideoTracks()[0], ...this.params }
 
       // const audioProducer = await this.producerTransport.produce(audioParams)
@@ -219,6 +220,10 @@ module.exports = class Mediasoup {
 
   signalNewConsumerTransport = async (remoteProducerId, remoteSocketId) => {
     //check if we are already consuming the remoteProducerId
+    console.log(
+      '🚀 ~ file: index.js:224 ~ Mediasoup ~ signalNewConsumerTransport= ~ this.consumingTransports.includes(remoteProducerId):',
+      this.consumingTransports.includes(remoteProducerId)
+    )
     if (this.consumingTransports.includes(remoteProducerId)) return
     this.consumingTransports.push(remoteProducerId)
 
@@ -263,7 +268,10 @@ module.exports = class Mediasoup {
           errback(error)
         }
       })
-      console.log('*****************************Connect called********************')
+      console.log(
+        '*****************************Connect called********************',
+        remoteProducerId !== this.serverProducerId
+      )
       if (remoteProducerId !== this.serverProducerId)
         await this.connectRecvTransport(consumerTransport, remoteProducerId, params.id)
     })

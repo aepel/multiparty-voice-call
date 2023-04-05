@@ -13,7 +13,7 @@ const Peer = require('../helpers/peer')
 const { startRecording, stopRecording, disconnect } = require('../recording')
 const { v4: uuidv4 } = require('uuid')
 const Room = require('../helpers/room')
-
+const _ = require('lodash')
 const peers = {}
 const rooms = {}
 module.exports = async (server, createRouterFromPoolFunction) => {
@@ -31,7 +31,7 @@ module.exports = async (server, createRouterFromPoolFunction) => {
     socket.on('joinRoom', async ({ roomName }, callback) => {
       // create Router if it does not exist
       // const router1 = rooms[roomName] && rooms[roomName].get('data').router || await createRoom(roomName, socket.id)
-      const router1 = await createRoom(roomName, socket.id)
+      const router1 = await createRoom(roomName, socket)
 
       // get Router RTP Capabilities
       const rtpCapabilities = router1.rtpCapabilities
@@ -54,11 +54,18 @@ module.exports = async (server, createRouterFromPoolFunction) => {
     })
     const informConsumers = (roomName, socketId, id, socket) => {
       console.log(`just joined, id ${id} ${roomName}, ${socketId}`)
-      socket.emit('new-producer', { producerId: id, socketId: socket.id })
+      _.forEach(
+        (rooms[roomName].producers || []).filter(producerData => producerData.socketId !== socketId),
+        ({ socketId: producerSocketId }) => {
+          const producerSocket = peers[producerSocketId].socket
+          // use socket to send producer id to producer
+          producerSocket.emit('new-producer', { producerId: id })
+        }
+      )
     }
     //When the client socket is disconnected
     socket.on('disconnect', async () => {
-      console.log('peer disconnected', socket.id, peers.length, peers[socket.id])
+      console.log('peer disconnected', socket.id, peers.length)
       const { roomName } = peers[socket.id] || {}
       if (peers[socket.id] && rooms[roomName]) {
         rooms[roomName].producer?.find(prod => prod.socketId === socket.id).forEach(disconnect)
@@ -116,7 +123,7 @@ module.exports = async (server, createRouterFromPoolFunction) => {
       })
       const { roomName } = peers[socket.id]
       console.log('***************************Socket/producer', socket.id, producer.id)
-      rooms[roomName].addProducer(producer)
+      rooms[roomName].addProducer(producer, socket.id)
       console.log('Producer ID: ', producer.id, producer.kind)
       informConsumers(roomName, socket.id, producer.id, socket)
 
@@ -163,7 +170,7 @@ module.exports = async (server, createRouterFromPoolFunction) => {
             paused: true,
           })
 
-          rooms[roomName].addConsumer(consumer)
+          rooms[roomName].addConsumer(consumer, socket.id)
 
           consumer.on('transportclose', () => {
             console.log('transport close from consumer')
@@ -255,19 +262,19 @@ module.exports = async (server, createRouterFromPoolFunction) => {
     }
   }
 
-  const createRoom = async (roomName, socketId) => {
+  const createRoom = async (roomName, socket) => {
     // worker.createRouter(options)
     // options = { mediaCodecs, appData }
     // mediaCodecs -> defined above
     // appData -> custom application data - we are not supplying any
     // none of the two are required
-
+    const socketId = socket.id
     if (!rooms[roomName]) {
       let router = await createRouterFromPoolFunction()
       rooms[roomName] = new Room(router, roomName)
     }
     if (!rooms[roomName].getPeer(socketId)) {
-      rooms[roomName].addPeer(new Peer(socketId, roomName))
+      rooms[roomName].addPeer(new Peer(socket, roomName))
     }
     peers[socketId] = rooms[roomName].getPeer(socketId)
     let router1 = rooms[roomName].getRouter()

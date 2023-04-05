@@ -6,8 +6,8 @@ const useMeeting = (localVideoRef, newConsumerEventCallback) => {
   const [callerId, setCallerId] = useState(null)
   const { socket } = useContext(SocketContext)
   const mediasoup = new Mediasoup(socket, newConsumerEventCallback)
-  const getLocalStream = () => {
-    navigator.mediaDevices
+  const getLocalStream = async () => {
+    const streamSuccess = await navigator.mediaDevices
       .getUserMedia({
         audio: false,
         video: true,
@@ -15,25 +15,20 @@ const useMeeting = (localVideoRef, newConsumerEventCallback) => {
       .catch(error => {
         console.log(error.message)
       })
-      .then(streamSuccess => {
-        localVideoRef.current.srcObject = streamSuccess
-        localStream = streamSuccess
 
-        console.log('🚀 ~ file: useMeeting.js:22 ~ getLocalStream ~ this.socket.id:', this.socket.id)
-      })
+    localVideoRef.current.srcObject = streamSuccess
+    localStream = streamSuccess
   }
-  useEffect(() => {
-    setCallerId(socket.id)
-  }, [])
+
   const DEFAULT_ROOM = 'THEROOM'
   const joinRoom = async (roomName = DEFAULT_ROOM) => {
     console.log('socket', socket.id)
     await mediasoup.joinRoom(roomName)
-    getLocalStream()
+    await getLocalStream()
 
     console.log('🚀 ~ file: useMeeting.js:30 ~ joinRoom ~ localStream:', localStream)
-    await mediasoup.createSendTransport(localStream)
+    mediasoup.createSendTransport(localStream)
   }
-  return { joinRoom, callerId }
+  return { joinRoom, callerId: socket.id }
 }
 export default useMeeting

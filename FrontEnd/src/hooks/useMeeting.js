@@ -3,7 +3,6 @@ import Mediasoup from '../mediasoup'
 import { SocketContext } from '../context/SocketContext'
 const useMeeting = (localVideoRef, newConsumerEventCallback) => {
   let localStream
-  const [callerId, setCallerId] = useState(null)
   const { socket } = useContext(SocketContext)
   const mediasoup = new Mediasoup(socket, newConsumerEventCallback)
   const getLocalStream = async () => {

@@ -49,7 +49,7 @@ const config = {
     ],
   },
   webRtcTransport: {
-    listenIps: [{ ip: '127.0.0.1', announcedIp: null }],
+    listenIps: [{ ip: '127.0.0.1', announcedIp: 'localhost' }],
     enableUdp: true,
     enableTcp: true,
     preferUdp: true,
@@ -58,7 +58,7 @@ const config = {
   },
 
   plainRtpTransport: {
-    listenIp: { ip: '0.0.0.0', announcedIp: '127.0.0.1' }, // TODO: Change announcedIp to your external IP or domain name
+    listenIp: { ip: '0.0.0.0', announcedIp: 'localhost' }, // TODO: Change announcedIp to your external IP or domain name
     rtcpMux: true,
     comedia: false,
   },

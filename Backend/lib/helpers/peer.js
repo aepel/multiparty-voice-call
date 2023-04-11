@@ -26,6 +26,10 @@ module.exports = class Peer {
   getTransport(transportId) {
     return this.transports.find(transport => transport.id === transportId)
   }
+
+  getConsumerTransport(transportId) {
+    return this.transports.find(transport => transport.id === transportId && transport.consumer)
+  }
   getTransports() {
     return this.transports
   }

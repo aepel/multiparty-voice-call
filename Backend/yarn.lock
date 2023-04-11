@@ -268,6 +268,11 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
+exec-queue@>=0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/exec-queue/-/exec-queue-0.0.2.tgz#8995aa6878df26b2f6339772fa86ceabd9930480"
+  integrity sha512-S5wh8SC6GKwiB/pmbMSMBs5EtIc1oiNmPi16wHUn+pl2dmslr+7GI8cyVQuLx+P6ttDuDVROr2WMFVSmhLu2ZA==
+
 express@^4.18.2:
   version "4.18.2"
   resolved "https://registry.yarnpkg.com/express/-/express-4.18.2.tgz#3fabe08296e930c796c19e3c516979386ba9fd59"
@@ -325,13 +330,18 @@ finalhandler@1.2.0:
     statuses "2.0.1"
     unpipe "~1.0.0"
 
-fluent-ffmpeg@^2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/fluent-ffmpeg/-/fluent-ffmpeg-2.1.2.tgz#c952de2240f812ebda0aa8006d7776ee2acf7d74"
-  integrity sha512-IZTB4kq5GK0DPp7sGQ0q/BWurGHffRtQQwVkiqDgeO6wYJLLV5ZhgNOQ65loZxxuPMKZKZcICCUnaGtlxBiR0Q==
+fluent-ffmpeg-multistream@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/fluent-ffmpeg-multistream/-/fluent-ffmpeg-multistream-1.0.0.tgz#e4bdae0128337f7274e882e7d0c84f7fe2792ea4"
+  integrity sha512-wWampD8JAYY4Y/UHogqT0ilaxWWLD3vs0ybxsm2perp3ctL0Zq1hE+tIs2oehYBMKgsEPvuxV8aEbjyK+1NUBQ==
+
+fluent-ffmpeg@1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/fluent-ffmpeg/-/fluent-ffmpeg-1.7.0.tgz#fb82fbe399c408cb43db5ffd8c85f73d450c8343"
+  integrity sha512-g6Z0KKXT0jS5dmlqKvPDnh3qI4gNzWPC/F60dc6G475mlM/NOH3Io5zoOfcG7kHR6nELIAbvmOr/CdO7c6gdjA==
   dependencies:
     async ">=0.2.9"
-    which "^1.1.1"
+    exec-queue ">=0.0.2"
 
 forwarded@0.2.0:
   version "0.2.0"
@@ -404,6 +414,11 @@ http-errors@2.0.0:
     statuses "2.0.1"
     toidentifier "1.0.1"
 
+httpolyglot@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/httpolyglot/-/httpolyglot-0.1.2.tgz#e4d347fe8984a62f467d4060df527f1851f6997b"
+  integrity sha512-ouHI1AaQMLgn4L224527S5+vq6hgvqPteurVfbm7ChViM3He2Wa8KP1Ny7pTYd7QKnDSPKcN8JYfC8r/lmsE3A==
+
 iconv-lite@0.4.24:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
@@ -449,11 +464,6 @@ is-number@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-7.0.0.tgz#7535345b896734d5f80c4d06c50955527a14f12b"
   integrity sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==
-
-isexe@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
-  integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
 lodash@^4.17.21:
   version "4.17.21"
@@ -806,13 +816,6 @@ vary@^1, vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
-
-which@^1.1.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/which/-/which-1.3.1.tgz#a45043d54f5805316da8d62f9f50918d3da70b0a"
-  integrity sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==
-  dependencies:
-    isexe "^2.0.0"
 
 ws@~8.11.0:
   version "8.11.0"

@@ -29,7 +29,7 @@ const main = async () => {
   const server = https.createServer(options, app)
 
   console.log(`socket IO configured`)
-  const PORT = process.env.PORT || 3003
+  const PORT = process.env.PORT || 3000
   await videoCallService.initializeConnectivity(server)
   server.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`)

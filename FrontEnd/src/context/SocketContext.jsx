@@ -2,7 +2,7 @@ import React, { createContext, useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 
 export const SocketContext = createContext({})
-
+const socket = io('https://localhost:3016')
 const SocketProvider = ({ children }) => {
   const videoRef = useRef(null)
   // const [transport, setTransport] = useState(null)
@@ -11,7 +11,7 @@ const SocketProvider = ({ children }) => {
   const [error] = useState(null)
 
   // Replace with your server URL
-  const socket = io('https://localhost:3003')
+
   let producer, consumer, transport
   useEffect(() => {
     socket.connect()
@@ -30,7 +30,7 @@ const SocketProvider = ({ children }) => {
       }
       socket.disconnect()
     }
-  }, [socket, consumer, producer, transport])
+  }, [consumer, producer, transport])
   const isConnected = () => !socket.connected || !socket.connecting
   const reconnect = () => (!socket.connected || !socket.connecting ? socket.connect() : null)
 

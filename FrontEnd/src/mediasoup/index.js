@@ -2,7 +2,7 @@ const mediasoupClient = require('mediasoup-client')
 //const config = require('../config')
 
 module.exports = class Mediasoup {
-  constructor(socket, newConsumerEventCallback) {
+  constructor(socket, newConsumerEventCallback, videoContainer) {
     this.socket = socket
     this.producers = new Map()
     this.device = null
@@ -16,6 +16,7 @@ module.exports = class Mediasoup {
     this.videoProducer = null
     this.consumer = null
     this.isProducer = false
+    this.videoContainer = videoContainer
     // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerOptions
     // https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
     this.params = {
@@ -218,7 +219,7 @@ module.exports = class Mediasoup {
     }
   }
 
-  signalNewConsumerTransport = async (remoteProducerId, remoteSocketId) => {
+  signalNewConsumerTransport = async remoteProducerId => {
     //check if we are already consuming the remoteProducerId
     console.log(
       '🚀 ~ file: index.js:224 ~ Mediasoup ~ signalNewConsumerTransport= ~ this.consumingTransports.includes(remoteProducerId):',
@@ -300,7 +301,7 @@ module.exports = class Mediasoup {
 
         // then consume with the local consumer transport
         // which creates a consumer
-        this.consumer = await consumerTransport.consume({
+        const consumer = await consumerTransport.consume({
           id: params.id,
           producerId: params.producerId,
           kind: params.kind,
@@ -311,11 +312,13 @@ module.exports = class Mediasoup {
           consumerTransport,
           serverConsumerTransportId: params.id,
           producerId: remoteProducerId,
-          consumer: this.consumer,
+          consumer: consumer,
         })
-        // destructure and retrieve the video track from the producer
-        const { track } = this.consumer
-        this.producers.set(remoteProducerId, new MediaStream([track]))
+        //  destructure and retrieve the video track from the producer
+        const { track } = consumer
+        console.log('🚀 ~ file: index.js:318 ~ Mediasoup ~ track:', track.getSettings())
+
+        // this.producers.set(remoteProducerId, new MediaStream([track]))
 
         if (this.newConsumerEventCallback)
           this.newConsumerEventCallback({
@@ -324,11 +327,9 @@ module.exports = class Mediasoup {
             stream: new MediaStream([track]),
           })
 
-        // remoteVideoRef.current.srcObject = new MediaStream([track])
-
         // the server consumer started with media paused
         // so we need to inform the server to resume
-        this.socket.emit('consumer-resume', { serverConsumerId: params.id })
+        this.socket.emit('consumer-resume', { serverConsumerId: params.serverConsumerId })
       }
     )
   }

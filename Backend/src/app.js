@@ -12,6 +12,7 @@ const path = require('path')
 const Room = require('./Room')
 const Peer = require('./Peer')
 
+const startRecordingFfmpeg = require('../lib/recording/ffmpeg')
 module.exports = () => {
   const options = {
     key: fs.readFileSync(path.join(__dirname, '../server/ssl/server.key'), 'utf-8'),
@@ -249,21 +250,30 @@ module.exports = () => {
 
       callback('successfully exited room')
     })
-  })
+    socket.on('startRecording', async () => {
+      console.log('Start recording')
 
-  // TODO remove - never used?
-  function room() {
-    return Object.values(roomList).map(r => {
-      return {
-        router: r.router.id,
-        peers: Object.values(r.peers).map(p => {
-          return {
-            name: p.name,
-          }
-        }),
-        id: r.id,
-      }
+      roomList.get(socket.room_id).startRecording()
+      startRecordingFfmpeg(socket.room_id, () => handleStopRecording(socket.room_id))
     })
+    socket.on('stopRecording', () => handleStopRecording(socket.room_id))
+  })
+  // ----------------------------------------------------------------------------
+
+  async function handleStopRecording(room_id) {
+    if (global.recProcess) {
+      global.recProcess.kill('SIGINT')
+    } else {
+      stopMediasoupRtp(room_id)
+    }
+  }
+
+  // ----
+
+  function stopMediasoupRtp(room_id) {
+    console.log('Stop mediasoup RTP transport and consumer')
+
+    roomList.get(room_id).stopRecording()
   }
 
   /**

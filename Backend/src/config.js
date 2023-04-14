@@ -3,7 +3,7 @@ const ifaces = os.networkInterfaces()
 
 const getLocalIp = () => {
   let localIp = '127.0.0.1'
-  Object.keys(ifaces).forEach((ifname) => {
+  Object.keys(ifaces).forEach(ifname => {
     for (const iface of ifaces[ifname]) {
       // Ignore IPv6 and 127.0.0.1
       if (iface.family !== 'IPv4' || iface.internal !== false) {
@@ -36,13 +36,13 @@ module.exports = {
         'dtls',
         'rtp',
         'srtp',
-        'rtcp'
+        'rtcp',
         // 'rtx',
         // 'bwe',
         // 'score',
         // 'simulcast',
         // 'svc'
-      ]
+      ],
     },
     // Router settings
     router: {
@@ -51,15 +51,15 @@ module.exports = {
           kind: 'audio',
           mimeType: 'audio/opus',
           clockRate: 48000,
-          channels: 2
+          channels: 2,
         },
         {
           kind: 'video',
           mimeType: 'video/VP8',
           clockRate: 90000,
           parameters: {
-            'x-google-start-bitrate': 1000
-          }
+            'x-google-start-bitrate': 1000,
+          },
         },
         {
           kind: 'video',
@@ -69,26 +69,26 @@ module.exports = {
             'packetization-mode': 1,
             'profile-level-id': '42e01f',
             'level-asymmetry-allowed': 1,
-            'x-google-start-bitrate': 1000
-          }
-        }
-      ]
+            'x-google-start-bitrate': 1000,
+          },
+        },
+      ],
     },
     // WebRtcTransport settings
     webRtcTransport: {
       listenIps: [
         {
           ip: '0.0.0.0',
-          announcedIp: getLocalIp() // replace by public IP address
-        }
+          announcedIp: getLocalIp(), // replace by public IP address
+        },
       ],
       maxIncomingBitrate: 1500000,
-      initialAvailableOutgoingBitrate: 1000000
+      initialAvailableOutgoingBitrate: 1000000,
     },
     plainRtpTransport: {
       listenIp: { ip: '0.0.0.0', announcedIp: '127.0.0.1' }, // TODO: Change announcedIp to your external IP or domain name
       rtcpMux: true,
-      comedia: false
-    }
-  }
+      comedia: false,
+    },
+  },
 }

@@ -1,21 +1,22 @@
 const config = require('./config')
 const { forEach } = require('lodash')
 const fs = require('fs')
+const { spawn } = require('child_process')
+const Promise = require('bluebird')
 module.exports = class Room {
   constructor(room_id, worker, io) {
     this.id = room_id
     this.recordingConsumers = []
     this.recordingTransport = null
+    this.ffmpeg = null
     const mediaCodecs = config.mediasoup.router.mediaCodecs
     worker
       .createRouter({
         mediaCodecs,
       })
-      .then(
-        function (router) {
-          this.router = router
-        }.bind(this)
-      )
+      .then(router => {
+        this.router = router
+      })
 
     this.peers = new Map()
     this.io = io
@@ -31,6 +32,7 @@ module.exports = class Room {
       peer.producers.forEach(producer => {
         producerList.push({
           producer_id: producer.id,
+          kind: producer.kind,
         })
       })
     })
@@ -43,34 +45,83 @@ module.exports = class Room {
 
   async startRecording() {
     await this.createRecordingTransport()
-    forEach(this.getProducerListForPeer(), async producer => {
-      const consumer = await this.recordingTransport.consume({
-        producerId: producer.producer_id,
-        rtpCapabilities: this.getRtpCapabilities(),
-        paused: true,
-      })
+    // create mediasoup consumer
 
-      setTimeout(() => {
-        consumer.resume()
-        console.log(
-          '🚀 ~ file: Room.js:52 ~ Room ~ forEach ~ consumer:',
-          consumer.track,
-          consumer.kind,
-          consumer.appData
-        )
-      }, 1000)
-      this.recordingConsumers.push(consumer)
-    })
+    const producers = this.getProducerListForPeer()
+
+    // combine SDP offers from all producers into a single offer
+    await Promise.all(
+      producers.map(async ({ producer_id }) => {
+        const consumer = this.recordingTransport.consume({
+          producerId: producer_id, // consume all producers
+          rtpCapabilities: this.getRtpCapabilities(),
+        })
+        this.recordingConsumers.push(consumer)
+        // setTimeout(() => {
+        //   consumer.resume()
+        //   console.log(
+        //     '🚀 ~ file: Room.js:52 ~ Room ~ forEach ~ consumer:',
+        //     consumer.track,
+        //     consumer.kind,
+        //     consumer.appData
+        //   )
+        // }, 1000)
+      })
+    )
+    const fileStream = fs.createWriteStream('media.webm')
+    this.ffmpeg = spawn('ffmpeg', [
+      '-y',
+      '-f',
+      'sdp',
+      '-i',
+      'v=0',
+      'o=- 0 0 IN IP4 127.0.0.1',
+      's=-',
+      'c=IN IP4 127.0.0.1',
+      't=0 0',
+      'm=audio 5004 RTP/AVPF 111',
+      'a=rtcp:5005',
+      'a=rtpmap:111 opus/48000/2',
+      'a=fmtp:111 minptime=10;useinbandfec=1',
+      'm=video 5006 RTP/AVPF 125',
+      'a=rtcp:5007',
+      'a=rtpmap:125 H264/90000',
+      'a=fmtp:125 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f',
+      '-c:v',
+      'libvpx-vp9',
+      '-deadline',
+      'realtime',
+      '-crf',
+      '40',
+      '-b:v',
+      '0',
+      '-pix_fmt',
+      'yuv420p',
+      '-c:a',
+      'opus',
+      '-strict',
+      '-2',
+      '-f',
+      'webm',
+      '-movflags',
+      '+faststart',
+      'pipe:1',
+    ])
+
+    // pipe ffmpeg output to file stream
+    this.ffmpeg.stdout.pipe(fileStream)
   }
   async createRecordingTransport() {
     if (!this.recordingTransport)
       this.recordingTransport = await this.router.createPlainTransport(config.mediasoup.plainRtpTransport)
   }
   async stopRecording() {
-    forEach(this.recordingConsumers, async consumer => consumer.close())
+    this.ffmpeg.kill('SIGINT')
+
     this.recordingConsumers = []
     await this.recordingTransport.close()
     this.recordingTransport = null
+    await Promise.each(this.recordingConsumers, async consumer => consumer.close())
   }
   async createWebRtcTransport(socket_id) {
     const { maxIncomingBitrate, initialAvailableOutgoingBitrate } = config.mediasoup.webRtcTransport

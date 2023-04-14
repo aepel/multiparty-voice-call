@@ -1,7 +1,7 @@
 const mediasoup = require('mediasoup')
 const config = require('../config')
 const { v4: uuidv4 } = require('uuid')
-const ffmpeg = require('../recording/ffmpeg')
+
 // Set up the mediasoup server and create a router
 const setUpMediaSoupServer = async () => {
   console.log('Set up Mediasoup server')
@@ -71,7 +71,7 @@ module.exports = {
   createWorkers,
   setUpMediaSoupServer,
   createRouter,
-  
+
   //   createProducer,
   //   connectTransport,
   //   createTransport,

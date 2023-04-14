@@ -40,3 +40,16 @@ RTP streaming timestamps packets so they arrive in the correct order even if som
 ### Important Notes
 
 <https://github.com/Kurento/mediasoup-demos/blob/master/mediasoup-recording/README.md#important-notes>
+
+## FFMPEG
+
+A good resource for understanding how it works.
+<https://github.com/leandromoreira/ffmpeg-libav-tutorial>
+
+### SDP as input
+
+SDP stands for Session Description Protocol. It is a text-based format used to describe multimedia sessions, including the parameters of the media streams being transmitted. In the context of mediasoup, the SDP configuration contains the details of the media streams that are being transmitted between the mediasoup client and server, including the codecs being used, the RTP (Real-time Transport Protocol) parameters, and other session-related details.
+
+When recording a media stream with ffmpeg, we need to provide the SDP configuration as input so that ffmpeg knows how to decode the incoming media stream. We do this by passing the SDP configuration as a string to the -i option of the ffmpeg command.
+
+we can extract the SDP configuration from the rtpParameters object of the mediasoup consumer, which contains the RTP parameters needed to transmit the media stream. or we can write our own SDP configuration. We pass this SDP configuration as input to ffmpeg using the -i option.

@@ -5,6 +5,7 @@ module.exports = class Peer {
     this.transports = new Map()
     this.consumers = new Map()
     this.producers = new Map()
+    this.remotePorts = []
   }
 
   addTransport(transport) {
@@ -15,7 +16,7 @@ module.exports = class Peer {
     if (!this.transports.has(transport_id)) return
 
     await this.transports.get(transport_id).connect({
-      dtlsParameters: dtlsParameters
+      dtlsParameters: dtlsParameters,
     })
   }
 
@@ -23,7 +24,7 @@ module.exports = class Peer {
     //TODO handle null errors
     let producer = await this.transports.get(producerTransportId).produce({
       kind,
-      rtpParameters
+      rtpParameters,
     })
 
     this.producers.set(producer.id, producer)
@@ -48,7 +49,7 @@ module.exports = class Peer {
       consumer = await consumerTransport.consume({
         producerId: producer_id,
         rtpCapabilities,
-        paused: false //producer.kind === 'video',
+        paused: false, //producer.kind === 'video',
       })
     } catch (error) {
       console.error('Consume failed', error)
@@ -58,7 +59,7 @@ module.exports = class Peer {
     if (consumer.type === 'simulcast') {
       await consumer.setPreferredLayers({
         spatialLayer: 2,
-        temporalLayer: 2
+        temporalLayer: 2,
       })
     }
 
@@ -80,8 +81,8 @@ module.exports = class Peer {
         kind: consumer.kind,
         rtpParameters: consumer.rtpParameters,
         type: consumer.type,
-        producerPaused: consumer.producerPaused
-      }
+        producerPaused: consumer.producerPaused,
+      },
     }
   }
 
@@ -100,7 +101,7 @@ module.exports = class Peer {
   }
 
   close() {
-    this.transports.forEach((transport) => transport.close())
+    this.transports.forEach(transport => transport.close())
   }
 
   removeConsumer(consumer_id) {

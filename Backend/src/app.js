@@ -12,7 +12,7 @@ const path = require('path')
 const Room = require('./Room')
 const Peer = require('./Peer')
 
-const startRecordingFfmpeg = require('../lib/recording/ffmpeg')
+const { startRecord, handleStopRecordRequest } = require('../lib/recording')
 module.exports = () => {
   const options = {
     key: fs.readFileSync(path.join(__dirname, '../server/ssl/server.key'), 'utf-8'),
@@ -253,20 +253,27 @@ module.exports = () => {
     socket.on('startRecording', async () => {
       console.log('Start recording')
 
-      roomList.get(socket.room_id).startRecording()
-      startRecordingFfmpeg(socket.room_id, () => handleStopRecording(socket.room_id))
+      const room = roomList.get(socket.room_id)
+      const peer = room.getPeers().get(socket.id)
+
+      startRecord(room, peer)
+      // startRecordingFfmpeg(socket.room_id, () => handleStopRecording(socket.room_id))
     })
-    socket.on('stopRecording', () => handleStopRecording(socket.room_id))
+    socket.on('stopRecording', () => {
+      const room = roomList.get(socket.room_id)
+      const peer = room.getPeers().get(socket.id)
+      handleStopRecordRequest(room, peer)
+    })
   })
   // ----------------------------------------------------------------------------
 
-  async function handleStopRecording(room_id) {
-    if (global.recProcess) {
-      global.recProcess.kill('SIGINT')
-    } else {
-      stopMediasoupRtp(room_id)
-    }
-  }
+  // async function handleStopRecording(room_id) {
+  //   if (global.recProcess) {
+  //     global.recProcess.kill('SIGINT')
+  //   } else {
+  //     stopMediasoupRtp(room_id)
+  //   }
+  // }
 
   // ----
 

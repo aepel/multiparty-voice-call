@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react'
-
-const Streamer = ({ kind, stream, id }) => {
+import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import './Participant/Participant.css'
+const Streamer = ({ kind, stream, id, showAvatar, currentParticipant }) => {
   const videoRef = useRef()
   useState(() => {
     console.log('producerId', id)
@@ -16,7 +18,6 @@ const Streamer = ({ kind, stream, id }) => {
         <audio key={id} id={id} autoPlay ref={videoRef}></audio>
       ) : (
         <>
-          <h5>{id}</h5>
           <video
             key={id}
             id={id}
@@ -28,6 +29,9 @@ const Streamer = ({ kind, stream, id }) => {
             style={{ border: '1px solid' }}
             ref={videoRef}
           ></video>
+          {/* {!audio && <FontAwesomeIcon className="muted" icon={faMicrophoneSlash} title="Muted" />} */}
+          {showAvatar && <div className="avatar">{currentParticipant}</div>}
+          <div className="name">{currentParticipant}</div>
         </>
       )}
     </>

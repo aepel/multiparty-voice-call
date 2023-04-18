@@ -1,4 +1,5 @@
 const config = require('./config')
+
 const { forEach } = require('lodash')
 const fs = require('fs')
 const { spawn } = require('child_process')
@@ -44,6 +45,9 @@ module.exports = class Room {
   }
 
   async startRecording() {
+    // we should create a single consumer, per each peer for recording. Just for simplicity i keep it in only one peer.
+    // aepelman: When i tried to do it with more than 3 my machine explode just because of the cpu consumption of the ffmpeg.
+    // I didn't try anything related with gstreamer.
     await this.createRecordingTransport()
     // create mediasoup consumer
 
@@ -171,18 +175,17 @@ module.exports = class Room {
   async produce(socket_id, producerTransportId, rtpParameters, kind) {
     // handle undefined errors
     return new Promise((resolve, reject) => {
-      this.peers
-        .get(socket_id)
-        .createProducer(producerTransportId, rtpParameters, kind)
-        .then(producer => {
-          resolve(producer.id)
-          this.broadCast(socket_id, 'newProducers', [
-            {
-              producer_id: producer.id,
-              producer_socket_id: socket_id,
-            },
-          ])
-        })
+      const individualPeer = this.peers.get(socket_id)
+      individualPeer.createProducer(producerTransportId, rtpParameters, kind).then(producer => {
+        resolve(producer.id)
+        this.broadCast(socket_id, 'newProducers', [
+          {
+            producer_id: producer.id,
+            producer_socket_id: socket_id,
+            participantName: individualPeer.name,
+          },
+        ])
+      })
     })
   }
 

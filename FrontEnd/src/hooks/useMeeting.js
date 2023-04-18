@@ -8,8 +8,7 @@ const useMeeting = (
   localVideoRef,
   newConsumerEventCallback,
   removeConsumerEventCallback,
-  videoContainer,
-  userName = 'Ariel' + parseInt(Math.random() * 1000, 10).toString(),
+  userName = 'ID_' + parseInt(Math.random() * 1000, 10).toString(),
   room_Id = DEFAULT_ROOM
 ) => {
   let localStream
@@ -48,7 +47,7 @@ const useMeeting = (
       rc = new RoomClient(
         localVideoRef,
         socket,
-        DEFAULT_ROOM,
+        room_Id,
         userName,
         newConsumerEventCallback,
         removeConsumerEventCallback
@@ -95,6 +94,6 @@ const useMeeting = (
       track.stop()
     })
   }
-  return { joinRoom, callerId: socket.id, videoDevices, audioDevices, initilizeCall }
+  return { joinRoom, callerId: userName, videoDevices, audioDevices, initilizeCall }
 }
 export default useMeeting

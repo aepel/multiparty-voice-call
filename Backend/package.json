@@ -13,6 +13,7 @@
     "fluent-ffmpeg": "1.7.0",
     "fluent-ffmpeg-multistream": "^1.0.0",
     "httpolyglot": "^0.1.2",
+    "kurento-client": "^7.0.0",
     "lodash": "^4.17.21",
     "mediasoup": "^3.11.15",
     "nodemon": "^2.0.22",

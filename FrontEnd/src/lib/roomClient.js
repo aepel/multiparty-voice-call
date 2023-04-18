@@ -225,8 +225,8 @@ class RoomClient {
      */
     this.socket.on('newProducers', async data => {
       console.log('New producers', data)
-      for (let { producer_id } of data) {
-        await this.consume(producer_id)
+      for (let { producer_id, participantName } of data) {
+        await this.consume(producer_id, participantName)
       }
     })
 
@@ -289,7 +289,17 @@ class RoomClient {
     let stream
     try {
       stream = screen
-        ? await navigator.mediaDevices.getDisplayMedia()
+        ? await navigator.mediaDevices.getUserMedia({
+            video: {
+              mediaSource: 'tab',
+              mimeType: 'video/webm;codecs=vp9',
+            },
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              sampleRate: 44100,
+            },
+          })
         : await navigator.mediaDevices.getUserMedia(mediaConstraints)
       console.log(navigator.mediaDevices.getSupportedConstraints())
 
@@ -322,11 +332,10 @@ class RoomClient {
       }
       const producer = await this.producerTransport.produce(params)
       this.mixingStream.addTrack(producer.track)
-      console.log('Producer', producer)
 
       this.producers.set(producer.id, producer)
 
-      if (!audio) {
+      if (!audio && !screen) {
         this.localMediaRef.current.srcObject = stream
         this.localMediaRef.current.id = producer.id
         this.localMediaRef.current.id = producer.id
@@ -380,7 +389,7 @@ class RoomClient {
     }
   }
 
-  async consume(producer_id) {
+  async consume(producer_id, participantName) {
     //let info = await this.roomInfo()
     if (!this.consumerTransport) await this.initConsumerTransport()
 
@@ -392,6 +401,7 @@ class RoomClient {
           kind: kind,
           consumerId: consumer.id,
           stream,
+          participantName,
         })
 
       consumer.on('trackended', () => {
@@ -559,11 +569,11 @@ class RoomClient {
   isRecording() {
     return this._isRecording
   }
-  async startRecordingCall() {
-    this.socket.emit("startRecording")
+  async startRecordingCall(stream) {
+    this.socket.emit('startRecording')
   }
   async stopRecordingCall() {
-    this.socket.emit("stopRecording")
+    this.socket.emit('stopRecording')
   }
 }
 

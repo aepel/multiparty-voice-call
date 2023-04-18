@@ -1,40 +1,53 @@
-import * as React from 'react'
-import Button from '@mui/material/Button'
-import Stack from '@mui/material/Stack'
+import { Button, Grid } from '@mui/material'
+import React, { useState } from 'react'
 
-const RecordButtons = ({ onRecordClick, onStopRecordClick, enableRecording = false, enableStopRecording = false }) => {
-  const startRecord = async peer => {
-    let recordInfo = {}
+const RecordButtons = ({ room }) => {
+  const [screenShareStream, setScreenShareStream] = useState(null)
 
-    for (const producer of peer.producers) {
-      // recordInfo[producer.kind] = await publishProducerRtpStream(peer, producer)
+  const startScreenShare = async () => {
+    try {
+      // const stream = await navigator.mediaDevices.getUserMedia({
+      //   video: {
+      //     mediaSource: 'tab',
+      //     mimeType: 'video/webm;codecs=vp9',
+      //   },
+      //   audio: {
+      //     echoCancellation: true,
+      //     noiseSuppression: true,
+      //     sampleRate: 44100,
+      //   },
+      // })
+      // setScreenShareStream(stream)
+
+      room.startRecordingCall()
+    } catch (error) {
+      console.error('Error starting screen share:', error)
     }
-
-    recordInfo.fileName = Date.now().toString()
-
-    // peer.process = getProcess(recordInfo)
-
-    setTimeout(async () => {
-      for (const consumer of peer.consumers) {
-        // Sometimes the consumer gets resumed before the GStreamer process has fully started
-        // so wait a couple of seconds
-        await consumer.resume()
-        await consumer.requestKeyFrame()
-      }
-    }, 1000)
   }
+
+  const stopScreenShare = () => {
+    // if (screenShareStream) {
+    //   screenShareStream.getTracks().forEach(track => track.stop())
+    //   setScreenShareStream(null)
+    room.stopRecordingCall()
+    // }
+  }
+
   return (
     <>
-      <Stack direction="row" spacing={4}>
-        <Button id="startRecordButton" onclick={onRecordClick} disabled={enableRecording}>
-          Start Record
-        </Button>
-
-        <Button id="stopRecordButton" onclick={onStopRecordClick} disabled={enableStopRecording}>
-          Stop Record
-        </Button>
-      </Stack>
+      <Grid item xs={2}>
+        {screenShareStream ? (
+          <Button variant="contained" color="secondary" id="stopScreenButton" onClick={stopScreenShare}>
+            <i className="fas fa-record"></i> Stop Recording
+          </Button>
+        ) : (
+          <Button variant="contained" color="secondary" id="stopScreenButton" onClick={startScreenShare}>
+            <i className="fas fa-record"></i> Start Recording
+          </Button>
+        )}
+      </Grid>
     </>
   )
 }
+
 export default RecordButtons

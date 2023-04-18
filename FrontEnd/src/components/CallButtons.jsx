@@ -2,8 +2,10 @@ import React from 'react'
 import Button from '@mui/material/Button'
 import RoomClient from '../lib/roomClient'
 import { Grid } from '@mui/material'
+import RecordButtons from './RecordButtons'
+import MediaDevices from './MediaDevices'
 
-const CallButtons = ({ room, videoDeviceId, audioDeviceId }) => {
+const CallButtons = ({ room, videoDeviceId, audioDeviceId, onVideoDeviceSelected, onAudioDeviceSelected }) => {
   console.log('room', room)
   if (room)
     return (
@@ -76,16 +78,13 @@ const CallButtons = ({ room, videoDeviceId, audioDeviceId }) => {
             <i className="fas fa-desktop"></i> Close screen
           </Button>
         </Grid>
-        <Grid item xs={2}>
-          <Button variant="contained" color="secondary" id="stopScreenButton" onClick={() => room.startRecordingCall()}>
-            <i className="fas fa-record"></i> Recording
-          </Button>
-        </Grid>
-        <Grid item xs={2}>
-          <Button variant="contained" color="secondary" id="stopScreenButton" onClick={() => room.stopRecordingCall()}>
-            <i className="fas fa-record"></i> Stop Recording
-          </Button>
-        </Grid>
+        <RecordButtons room={room}></RecordButtons>
+        <MediaDevices
+          videoDeviceSelected={videoDeviceId}
+          setAudioDeviceSelected={onAudioDeviceSelected}
+          setVideoDeviceSelected={onVideoDeviceSelected}
+          audioDeviceSelected={audioDeviceId}
+        ></MediaDevices>
       </Grid>
     )
 }

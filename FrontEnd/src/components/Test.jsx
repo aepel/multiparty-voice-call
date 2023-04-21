@@ -92,9 +92,9 @@ const Test = () => {
       </Grid>
       <Grid item xs={4}></Grid>
       <Grid container spacing={2}>
-        {callers.map(({ stream, producerId: consumerId, kind }) => (
+        {callers.map(({ stream, producerId: consumerId, kind, participantName }) => (
           <Grid item xs={4}>
-            <Streamer kind={kind} stream={stream} id={consumerId} />
+            <Streamer kind={kind} stream={stream} id={consumerId} currentParticipant={participantName} />
           </Grid>
         ))}
       </Grid>

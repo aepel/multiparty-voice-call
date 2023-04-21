@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import Mediasoup from '../mediasoup'
+import Mediasoup from '../lib/mediasoup/index2'
 import { SocketContext } from '../context/SocketContext'
 import RoomClient from '../lib/roomClient'
 
@@ -11,26 +11,10 @@ const useMeeting = (
   userName = 'ID_' + parseInt(Math.random() * 1000, 10).toString(),
   room_Id = DEFAULT_ROOM
 ) => {
-  let localStream
   const { socket } = useContext(SocketContext)
-  const mediasoup = new Mediasoup(socket, newConsumerEventCallback)
   const [videoDevices, setVideoDevices] = useState()
   const [audioDevices, setAudioDevices] = useState()
   const [room, setRoom] = useState(null)
-
-  const getLocalStream = async () => {
-    const streamSuccess = await navigator.mediaDevices
-      .getUserMedia({
-        audio: false,
-        video: true,
-      })
-      .catch(error => {
-        console.log(error.message)
-      })
-
-    localVideoRef.current.srcObject = streamSuccess
-    localStream = streamSuccess
-  }
 
   const initilizeCall = async () => {
     await initEnumerateDevices()
@@ -64,7 +48,6 @@ const useMeeting = (
     const devices = await navigator.mediaDevices.enumerateDevices()
     const vidDevices = []
     const audDevices = []
-    console.log('🚀 ~ file: useMeeting.js:51 ~ enumerateDevices ~ devices:', devices)
     devices.forEach(device => {
       const dev = { deviceId: device.deviceId, label: device.label }
       if (isAudioDevice(device.kind)) {

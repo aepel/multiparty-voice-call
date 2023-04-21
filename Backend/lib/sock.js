@@ -438,12 +438,7 @@ io.on('connection', socket => {
     roomList.get(socket.room_id).removePeer(socket.id)
 
     if (roomList.get(socket.room_id).getPeers().size === 0) {
-      if (roomList.get(socket.room_id).isLocked()) {
-        roomList.get(socket.room_id).setLocked(false)
-      }
-      if (roomList.get(socket.room_id).isLobbyEnabled()) {
-        roomList.get(socket.room_id).setLobbyEnabled(false)
-      }
+      roomList.delete(socket.room_id)
     }
 
     roomList.get(socket.room_id).broadCast(socket.id, 'removeMe', removeMeData())

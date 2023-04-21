@@ -5,7 +5,7 @@ import './Participant/Participant.css'
 const Streamer = ({ kind, stream, id, showAvatar, currentParticipant }) => {
   const videoRef = useRef()
   useState(() => {
-    console.log('producerId', id)
+    console.log('producerId', currentParticipant)
     setTimeout(() => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream
@@ -32,6 +32,7 @@ const Streamer = ({ kind, stream, id, showAvatar, currentParticipant }) => {
           {/* {!audio && <FontAwesomeIcon className="muted" icon={faMicrophoneSlash} title="Muted" />} */}
           {showAvatar && <div className="avatar">{currentParticipant}</div>}
           <div className="name">{currentParticipant}</div>
+          <h6>{currentParticipant}</h6>
         </>
       )}
     </>

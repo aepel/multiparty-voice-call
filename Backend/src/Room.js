@@ -176,6 +176,7 @@ module.exports = class Room {
     // handle undefined errors
     return new Promise((resolve, reject) => {
       const individualPeer = this.peers.get(socket_id)
+
       individualPeer.createProducer(producerTransportId, rtpParameters, kind).then(producer => {
         resolve(producer.id)
         this.broadCast(socket_id, 'newProducers', [

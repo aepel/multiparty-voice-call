@@ -95,12 +95,14 @@ class Mediasoup {
     })
 
     this.producerTransport.on('connectionstatechange', state => {
+      /**
+       * These are the possible states for a connection change, i keep them all just as an example
+       */
       switch (state) {
         case 'connecting':
           break
 
         case 'connected':
-          //localVideo.srcObject = stream
           break
 
         case 'failed':
@@ -124,10 +126,6 @@ class Mediasoup {
 
     // only one needed
     this.consumerTransport = this.device.createRecvTransport(data)
-    console.log(
-      '🚀 ~ file: roomClient.js:191 ~ RoomClient ~ initConsumerTransport ~ this.consumerTransport:',
-      this.consumerTransport
-    )
     this.consumerTransport.on('connect', ({ dtlsParameters }, callback, errback) => {
       this.request('connectTransport', {
         transport_id: this.consumerTransport.id,
@@ -143,8 +141,6 @@ class Mediasoup {
           break
 
         case 'connected':
-          //remoteVideo.srcObject = await stream;
-          //await socket.request('resume');
           break
 
         case 'failed':
@@ -163,44 +159,10 @@ class Mediasoup {
 
   async produce(type, deviceId = null) {
     let mediaConstraints = {}
-    let audio = false
-    let screen = false
-    switch (type) {
-      case this.mediaType.audio:
-        mediaConstraints = {
-          audio: {
-            deviceId: deviceId,
-          },
-          video: false,
-        }
-        audio = true
-        break
-      case this.mediaType.video:
-        mediaConstraints = {
-          audio: false,
-          video: {
-            width: {
-              min: 640,
-              ideal: 1920,
-            },
-            height: {
-              min: 400,
-              ideal: 1080,
-            },
-            deviceId: deviceId,
-            /*aspectRatio: {
-                            ideal: 1.7777777778
-                        }*/
-          },
-        }
-        break
-      case this.mediaType.screen:
-        mediaConstraints = false
-        screen = true
-        break
-      default:
-        return
-    }
+    let audio = type === this.mediaType.audio
+    let screen = type === this.mediaType.screen
+    mediaConstraints = this.getMediaConstraints(type, deviceId)
+
     if (!this.device.canProduce('video') && !audio) {
       console.error('Cannot produce video')
       return
@@ -292,7 +254,43 @@ class Mediasoup {
     }
     return { screen, audio, stream, producerId }
   }
+  getMediaConstraints(type, deviceId) {
+    switch (type) {
+      case this.mediaType.audio:
+        return {
+          audio: {
+            deviceId: deviceId,
+          },
+          video: false,
+        }
+        break
+      case this.mediaType.video:
+        return {
+          audio: false,
+          video: {
+            width: {
+              min: 640,
+              ideal: 1920,
+            },
+            height: {
+              min: 400,
+              ideal: 1080,
+            },
+            deviceId: deviceId,
+            /*aspectRatio: {
+                          ideal: 1.7777777778
+                      }*/
+          },
+        }
 
+      case this.mediaType.screen:
+      /*  mediaConstraints = false
+        screen = true
+        break*/
+      default:
+        return {}
+    }
+  }
   async consume(producer_id, participantName, newConsumerEventCallback) {
     //let info = await this.roomInfo()
     if (!this.consumerTransport) await this.initConsumerTransport()

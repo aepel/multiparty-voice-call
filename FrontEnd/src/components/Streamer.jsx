@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import './Participant/Participant.css'
-const Streamer = ({ kind, stream, id, showAvatar, currentParticipant }) => {
+const Streamer = ({ kind, stream, id, showAvatar = true, currentParticipant }) => {
   const videoRef = useRef()
   useState(() => {
     console.log('producerId', currentParticipant)
@@ -17,7 +17,7 @@ const Streamer = ({ kind, stream, id, showAvatar, currentParticipant }) => {
       {kind === 'audio' ? (
         <audio key={id} id={id} autoPlay ref={videoRef}></audio>
       ) : (
-        <>
+        <div className="participant">
           <video
             key={id}
             id={id}
@@ -33,7 +33,7 @@ const Streamer = ({ kind, stream, id, showAvatar, currentParticipant }) => {
           {showAvatar && <div className="avatar">{currentParticipant}</div>}
           <div className="name">{currentParticipant}</div>
           <h6>{currentParticipant}</h6>
-        </>
+        </div>
       )}
     </>
   )

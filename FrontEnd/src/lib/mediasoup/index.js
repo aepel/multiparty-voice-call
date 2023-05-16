@@ -263,7 +263,6 @@ class Mediasoup {
           },
           video: false,
         }
-        break
       case this.mediaType.video:
         return {
           audio: false,
@@ -288,7 +287,7 @@ class Mediasoup {
         screen = true
         break*/
       default:
-        return {}
+        break
     }
   }
   async consume(producer_id, participantName, newConsumerEventCallback) {

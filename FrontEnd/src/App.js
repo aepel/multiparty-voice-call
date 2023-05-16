@@ -1,7 +1,7 @@
 import './App.css'
 import React from 'react'
 import SocketProvider from './context/SocketContext'
-import { BrowserRouter, Link, Route, Switch } from 'react-router-dom'
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
 import Test from './components/Test'
 function App() {

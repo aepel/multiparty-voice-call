@@ -44,76 +44,170 @@ module.exports = class Room {
     return this.router.rtpCapabilities
   }
 
-  async startRecording() {
-    // we should create a single consumer, per each peer for recording. Just for simplicity i keep it in only one peer.
-    // aepelman: When i tried to do it with more than 3 my machine explode just because of the cpu consumption of the ffmpeg.
-    // I didn't try anything related with gstreamer.
-    await this.createRecordingTransport()
-    // create mediasoup consumer
+  // async startRecording() {
+  //   // we should create a single consumer, per each peer for recording. Just for simplicity i keep it in only one peer.
+  //   // aepelman: When i tried to do it with more than 3 my machine explode just because of the cpu consumption of the ffmpeg.
+  //   // I didn't try anything related with gstreamer.
+  //   await this.createRecordingTransport()
+  //   // create mediasoup consumer
 
-    const producers = this.getProducerListForPeer()
+  //   const producers = this.getProducerListForPeer()
 
-    // combine SDP offers from all producers into a single offer
-    await Promise.all(
-      producers.map(async ({ producer_id }) => {
-        const consumer = this.recordingTransport.consume({
-          producerId: producer_id, // consume all producers
-          rtpCapabilities: this.getRtpCapabilities(),
-        })
-        this.recordingConsumers.push(consumer)
-        // setTimeout(() => {
-        //   consumer.resume()
-        //   console.log(
-        //     '🚀 ~ file: Room.js:52 ~ Room ~ forEach ~ consumer:',
-        //     consumer.track,
-        //     consumer.kind,
-        //     consumer.appData
-        //   )
-        // }, 1000)
-      })
-    )
-    const fileStream = fs.createWriteStream('media.webm')
-    this.ffmpeg = spawn('ffmpeg', [
-      '-y',
-      '-f',
-      'sdp',
-      '-i',
-      'v=0',
-      'o=- 0 0 IN IP4 127.0.0.1',
-      's=-',
-      'c=IN IP4 127.0.0.1',
-      't=0 0',
-      'm=audio 5004 RTP/AVPF 111',
-      'a=rtcp:5005',
-      'a=rtpmap:111 opus/48000/2',
-      'a=fmtp:111 minptime=10;useinbandfec=1',
-      'm=video 5006 RTP/AVPF 125',
-      'a=rtcp:5007',
-      'a=rtpmap:125 H264/90000',
-      'a=fmtp:125 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f',
-      '-c:v',
-      'libvpx-vp9',
-      '-deadline',
-      'realtime',
-      '-crf',
-      '40',
-      '-b:v',
-      '0',
-      '-pix_fmt',
-      'yuv420p',
-      '-c:a',
-      'opus',
-      '-strict',
-      '-2',
-      '-f',
-      'webm',
-      '-movflags',
-      '+faststart',
-      'pipe:1',
-    ])
+  //   // combine SDP offers from all producers into a single offer
+  //   await Promise.all(
+  //     producers.map(async ({ producer_id }) => {
+  //       const consumer = this.recordingTransport.consume({
+  //         producerId: producer_id, // consume all producers
+  //         rtpCapabilities: this.getRtpCapabilities(),
+  //       })
+  //       this.recordingConsumers.push(consumer)
+  //       // setTimeout(() => {
+  //       //   consumer.resume()
+  //       //   console.log(
+  //       //     '🚀 ~ file: Room.js:52 ~ Room ~ forEach ~ consumer:',
+  //       //     consumer.track,
+  //       //     consumer.kind,
+  //       //     consumer.appData
+  //       //   )
+  //       // }, 1000)
+  //     })
+  //   )
+  //   const fileStream = fs.createWriteStream('media.webm')
+  //   this.ffmpeg = spawn('ffmpeg', [
+  //     '-y',
+  //     '-f',
+  //     'sdp',
+  //     '-i',
+  //     'v=0',
+  //     'o=- 0 0 IN IP4 127.0.0.1',
+  //     's=-',
+  //     'c=IN IP4 127.0.0.1',
+  //     't=0 0',
+  //     'm=audio 5004 RTP/AVPF 111',
+  //     'a=rtcp:5005',
+  //     'a=rtpmap:111 opus/48000/2',
+  //     'a=fmtp:111 minptime=10;useinbandfec=1',
+  //     'm=video 5006 RTP/AVPF 125',
+  //     'a=rtcp:5007',
+  //     'a=rtpmap:125 H264/90000',
+  //     'a=fmtp:125 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f',
+  //     '-c:v',
+  //     'libvpx-vp9',
+  //     '-deadline',
+  //     'realtime',
+  //     '-crf',
+  //     '40',
+  //     '-b:v',
+  //     '0',
+  //     '-pix_fmt',
+  //     'yuv420p',
+  //     '-c:a',
+  //     'opus',
+  //     '-strict',
+  //     '-2',
+  //     '-f',
+  //     'webm',
+  //     '-movflags',
+  //     '+faststart',
+  //     'pipe:1',
+  //   ])
 
-    // pipe ffmpeg output to file stream
-    this.ffmpeg.stdout.pipe(fileStream)
+  //   // pipe ffmpeg output to file stream
+  //   this.ffmpeg.stdout.pipe(fileStream)
+  // }
+  // Create a method for receiving all the mediatracks from the producers and store them into a single file using ggstreamer /
+
+  
+  async StartRecording(){
+    // Create a mediasoup WebRTC transport
+const transport = await router.createWebRtcTransport({
+  listenIps: [{ ip: '0.0.0.0', announcedIp: null }],
+  enableUdp: true,
+  enableTcp: true,
+  preferUdp: true,
+});
+
+// Set up event handlers for the transport
+transport.on('dtlsstatechange', (dtlsState) => {
+  if (dtlsState === 'closed') {
+    console.log('WebRTC transport closed');
+  }
+});
+transport.on('close', () => {
+  console.log('WebRTC transport closed');
+});
+
+// Connect the transport to a remote client
+const { params } = await transport.connect({ dtlsParameters });
+
+// Create a mediasoup producer for each incoming audio track
+for (const audioTrack of incomingAudioTracks) {
+  const producer = await transport.produce({
+    kind: 'audio',
+    rtpParameters,
+    appData: { source: audioTrack },
+  });
+}
+
+// Create a mediasoup producer for each incoming video track
+for (const videoTrack of incomingVideoTracks) {
+  const producer = await transport.produce({
+    kind: 'video',
+    rtpParameters,
+    appData: { source: videoTrack },
+  });
+}
+
+// Create a mediasoup consumer for each outgoing audio track
+for (const audioTrack of outgoingAudioTracks) {
+  const consumer = await transport.consume({
+    producerId,
+    rtpCapabilities,
+    paused,
+    appData: { sink: audioTrack },
+  });
+}
+
+// Create a mediasoup consumer for each outgoing video track
+for (const videoTrack of outgoingVideoTracks) {
+  const consumer = await transport.consume({
+    producerId,
+    rtpCapabilities,
+    paused,
+    appData: { sink: videoTrack },
+  });
+}
+
+// Start recording the room
+router.createPlainRtpTransport().then((rtpTransport) => {
+  const rtpStream = fs.createWriteStream('/path/to/recording.pcm');
+  
+  // Set up event handlers for the RTP transport
+  rtpTransport.on('rtp', ({ payload }) => {
+    rtpStream.write(payload);
+  });
+  
+  // Connect the RTP transport to the WebRTC transport
+  rtpTransport.connect({ ip, port, rtcpPort }).then(() => {
+    console.log('Recording started');
+    
+    // Stop recording after some time has passed
+    setTimeout(() => {
+      rtpStream.end();
+      console.log('Recording stopped');
+      
+      // Close all transports and exit the process
+      Promise.all([
+        transport.close(),
+        rtpTransport.close(),
+        worker.close(),
+      ]).then(() => process.exit());
+      
+    }, 5000);
+    
+  });
+});
+
   }
   async createRecordingTransport() {
     if (!this.recordingTransport)

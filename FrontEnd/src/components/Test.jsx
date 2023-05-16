@@ -9,6 +9,7 @@ import remove from 'lodash/remove'
 
 import CallButtons from './CallButtons'
 import { useParams } from 'react-router-dom'
+import ScreenRecorder from './ScreenRecorder';
 
 const Test = () => {
   const localVideoRef = useRef()
@@ -39,7 +40,7 @@ const Test = () => {
     },
     [setCallers, callers]
   )
-  const { joinRoom, callerId, initilizeCall, videoDevices, audioDevices } = useMeeting(
+  const { joinRoom, callerId, initilizeCall, videoDevices, audioDevices, sendStreamToServer } = useMeeting(
     localVideoRef,
     addVideoBoxCallBack,
     removeVideoBoxCallBack,
@@ -69,6 +70,8 @@ const Test = () => {
   }
 
   return (
+    <>
+    <ScreenRecorder sendStreamToServer={sendStreamToServer}>
     <Grid container spacing={2}>
       <Grid item alignContent="center" xs={12}>
         <h1>Hi, {userName}!</h1>
@@ -77,6 +80,7 @@ const Test = () => {
         <Grid container>
           <CallButtons
             room={room}
+            sendStreamToServer={sendStreamToServer}
             videoDeviceId={videoDeviceSelected}
             audioDeviceId={audioDeviceSelected}
             onAudioDeviceSelected={setAudioDeviceSelected}
@@ -104,6 +108,8 @@ const Test = () => {
         </Button>
       </Grid>
     </Grid>
+    </ScreenRecorder>
+    </>
   )
 }
 

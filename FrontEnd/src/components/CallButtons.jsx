@@ -4,8 +4,9 @@ import RoomClient from '../lib/roomClient'
 import { Grid } from '@mui/material'
 import RecordButtons from './RecordButtons'
 import MediaDevices from './MediaDevices'
+import ScreenRecorder from './ScreenRecorder'
 
-const CallButtons = ({ room, videoDeviceId, audioDeviceId, onVideoDeviceSelected, onAudioDeviceSelected }) => {
+const CallButtons = ({ room, videoDeviceId, audioDeviceId, onVideoDeviceSelected, onAudioDeviceSelected, sendStreamToServer=null }) => {
   console.log('room', room)
   if (room)
     return (
@@ -37,8 +38,8 @@ const CallButtons = ({ room, videoDeviceId, audioDeviceId, onVideoDeviceSelected
           >
             <i className="fas fa-volume-up"></i> Close audio
           </Button>
-        </Grid>
         <Grid item xs={2}>
+        </Grid>
           <Button
             variant="contained"
             color="secondary"
@@ -78,7 +79,7 @@ const CallButtons = ({ room, videoDeviceId, audioDeviceId, onVideoDeviceSelected
             <i className="fas fa-desktop"></i> Close screen
           </Button>
         </Grid>
-        <RecordButtons room={room}></RecordButtons>
+        {/* <RecordButtons room={room}></RecordButtons> */}
         <MediaDevices
           videoDeviceSelected={videoDeviceId}
           setAudioDeviceSelected={onAudioDeviceSelected}

@@ -1,5 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
-import Mediasoup from '../lib/mediasoup/index2'
+import { useContext, useState } from 'react'
 import { SocketContext } from '../context/SocketContext'
 import RoomClient from '../lib/roomClient'
 
@@ -20,6 +19,10 @@ const useMeeting = (
     await initEnumerateDevices()
   }
 
+  const sendStreamToServer = (data) => {
+    socket.emit('send-stream', {data, roomId:room.room_id})
+  
+  }
   const joinRoom = async deviceId => {
     let rc
     if (room?.isOpen()) {
@@ -77,6 +80,6 @@ const useMeeting = (
       track.stop()
     })
   }
-  return { joinRoom, callerId: userName, videoDevices, audioDevices, initilizeCall }
+  return { joinRoom, callerId: userName, videoDevices, audioDevices, initilizeCall,sendStreamToServer }
 }
 export default useMeeting

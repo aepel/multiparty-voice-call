@@ -56,7 +56,6 @@ module.exports = class Peer {
   }
 
   getConsumerById(consumerId) {
-    console.log('-------------consumers-------------', this.consumers)
     return this.consumers.find(consumer => consumer.id === consumerId)
   }
   get roomName() {

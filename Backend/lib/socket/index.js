@@ -1,12 +1,4 @@
-const {
-  setUpMediaSoupServer,
-  createConsumer,
-  createProducer,
-  createTransport,
-  connectTransport,
-  recordVideo,
-  createRouter,
-} = require('../mediasoup')
+
 const ffmpeg = require('fluent-ffmpeg')
 const { StreamInput } = require('fluent-ffmpeg-multistream')
 const fs = require('fs')
@@ -85,10 +77,7 @@ module.exports = async (server, createRouterFromPoolFunction) => {
       }
     })
 
-    // // router = await createRouter()
-    // // Client emits a request for RTP Capabilities
-    // // This event responds to the request
-    // socket.on('getRtpCapabilities', async callback => getRtpCapabilities(callback, sessionId))
+
 
     // Client emits a request to create server side Transport
     // We need to differentiate between the producer and consumer transports
@@ -130,30 +119,12 @@ module.exports = async (server, createRouterFromPoolFunction) => {
         kind,
         rtpParameters,
       })
-      console.log('🚀 ~ file: index.js:128 ~ socket.on ~ producer:', producer)
       const { roomName } = peers[socket.id]
       console.log('***************************Socket/producer', socket.id, producer.id)
       rooms[roomName].addProducer(producer, socket.id)
       console.log('Producer ID: ', producer.id, producer.kind)
       informConsumers(roomName, socket.id, producer.id, socket)
-      const outputFilePath = path.join(__dirname, 'file.mp4')
-
-      // Replace `producerStream` with your actual MediaSoup producer stream
-
-      // Create a writable stream to save the output file
-      const outputStream = fs.createWriteStream(outputFilePath)
-
-      // Start the FFmpeg process to record the stream
-      ffmpeg()
-        .input(producer.track)
-        .inputOptions('-f rawvideo')
-        .inputFormat('rawvideo')
-        .outputOptions('-c:v libx264', '-preset veryfast', '-crf 22', '-pix_fmt yuv420p')
-        .outputFormat('mp4')
-        .on('start', commandLine => console.log(`FFmpeg started with command:\n${commandLine}`))
-        .on('error', (err, stdout, stderr) => console.log(`FFmpeg error:\n${err.message}`))
-        .on('end', () => console.log('Recording finished'))
-        .pipe(outputStream, { end: true })
+     
       producer.on('transportclose', () => {
         console.log('transport for this producer closed ')
         producer.close()
@@ -289,11 +260,7 @@ module.exports = async (server, createRouterFromPoolFunction) => {
   }
 
   const createRoom = async (roomName, socket) => {
-    // worker.createRouter(options)
-    // options = { mediaCodecs, appData }
-    // mediaCodecs -> defined above
-    // appData -> custom application data - we are not supplying any
-    // none of the two are required
+    
     const socketId = socket.id
     if (!rooms[roomName]) {
       let router = await createRouterFromPoolFunction()

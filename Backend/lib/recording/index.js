@@ -66,7 +66,6 @@ const publishProducerRtpStream = async (peer, producer, router) => {
     rtcpFeedback: [],
   }
 
-  console.log('🚀 ~ file: index.js:57 ~ publishProducerRtpStream ~ rtpCapabilities:', rtpCapabilities)
   // Start the consumer paused
   // Once the gstreamer process is ready to consume resume and send a keyframe
   const rtpConsumer = await rtpTransport.consume({

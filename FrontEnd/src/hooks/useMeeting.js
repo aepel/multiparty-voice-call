@@ -30,7 +30,6 @@ const useMeeting = (
     } else {
       initEnumerateDevices()
 
-      console.log('🚀 ~ file: useMeeting.js:45 ~ joinRoom ~ socket:', socket)
       rc = new RoomClient(
         localVideoRef,
         socket,
@@ -70,8 +69,6 @@ const useMeeting = (
       audio: audioDevices?.length > 0,
       video: videoDevices?.length > 0,
     }
-    console.log('🚀 ~ file: useMeeting.js:63 ~ initEnumerateDevices ~ s:', constraints)
-
     const stream = await navigator.mediaDevices.getUserMedia(constraints).catch(err => {
       console.error('Access denied for audio/video: ', err)
     })

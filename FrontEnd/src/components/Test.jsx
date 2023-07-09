@@ -71,7 +71,6 @@ const Test = () => {
 
   return (
     <>
-    <ScreenRecorder sendStreamToServer={sendStreamToServer}>
     <Grid container spacing={2}>
       <Grid item alignContent="center" xs={12}>
         <h1>Hi, {userName}!</h1>
@@ -108,7 +107,6 @@ const Test = () => {
         </Button>
       </Grid>
     </Grid>
-    </ScreenRecorder>
     </>
   )
 }

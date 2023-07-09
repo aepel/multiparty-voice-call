@@ -1,6 +1,5 @@
 const mediasoup = require('mediasoup')
 const config = require('../config')
-const { v4: uuidv4 } = require('uuid')
 
 // Set up the mediasoup server and create a router
 const setUpMediaSoupServer = async () => {
@@ -47,16 +46,6 @@ async function createRouter() {
   return await worker.createRouter({ mediaCodecs: config.routerOptions.mediaCodecs })
 }
 
-async function createTransport(transportType, router, options) {
-  console.log('createTransport() [type:%s. options:%o]', transportType, options)
-
-  switch (transportType) {
-    case 'webRtc':
-      return await router.createWebRtcTransport(config.webRtcTransport)
-    case 'plain':
-      return await router.createPlainRtpTransport(config.plainRtpTransport)
-  }
-}
 
 const getNextWorker = () => {
   const worker = workers[nextWorkerIndex]
@@ -72,8 +61,5 @@ module.exports = {
   setUpMediaSoupServer,
   createRouter,
 
-  //   createProducer,
-  //   connectTransport,
-  //   createTransport,
-  //   recordVideo,
+
 }

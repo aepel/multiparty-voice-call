@@ -1,6 +1,6 @@
 // const main = require('./server')
 
 // main().catch(err => console.log(err))
-const main = require('./src/app')
+const main = require('./server')
 
 main()

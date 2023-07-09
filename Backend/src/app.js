@@ -81,12 +81,7 @@ module.exports = () => {
       })
       workers.push(worker)
 
-      // log worker resource usage
-      /*setInterval(async () => {
-            const usage = await worker.getResourceUsage();
-
-            console.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
-        }, 120000);*/
+     
     }
   }
 
@@ -189,7 +184,6 @@ module.exports = () => {
     })
 
     socket.on('consume', async ({ consumerTransportId, producerId, rtpCapabilities }, callback) => {
-      //TODO null handling
       let params = await roomList
         .get(socket.room_id)
         .consume(socket.id, consumerTransportId, producerId, rtpCapabilities)
@@ -265,17 +259,7 @@ module.exports = () => {
       handleStopRecordRequest(room, peer)
     })
   })
-  // ----------------------------------------------------------------------------
-
-  // async function handleStopRecording(room_id) {
-  //   if (global.recProcess) {
-  //     global.recProcess.kill('SIGINT')
-  //   } else {
-  //     stopMediasoupRtp(room_id)
-  //   }
-  // }
-
-  // ----
+  
 
   function stopMediasoupRtp(room_id) {
     console.log('Stop mediasoup RTP transport and consumer')

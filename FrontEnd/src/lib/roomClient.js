@@ -121,12 +121,20 @@ class RoomClient {
   }
 
   removeConsumer(consumer_id) {
+    try{
+
+    
     this.mediaSoup.removeConsumer(consumer_id)
+    console.log("calling callback for removing")
     this.removeConsumerCallback({ consumerId: consumer_id })
+    }catch(err){
+      console.log('removing consumer error',err)
+    }
   }
 
   exit(offline = false) {
     let clean = () => {
+      console.log('exit room clean method')
       this._isOpen = false
       this.socket.off('disconnect')
       this.socket.off('newProducers')
@@ -135,11 +143,13 @@ class RoomClient {
     }
 
     if (!offline) {
+      console.log("exit room")
       this.request('exitRoom')
         .then(e => console.log(e))
         .catch(e => console.warn(e))
         .finally(() => clean())
     } else {
+      console.log("exit room clean")  
       clean()
     }
   }

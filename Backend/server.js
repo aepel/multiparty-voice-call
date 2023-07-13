@@ -13,7 +13,6 @@ const main = async () => {
   app.use(cors())
   app.use(compression())
   app.use(express.json())
-  // app.use(express.static(dir.public))
   app.use(bodyParser.urlencoded({ extended: true }))
 
   app.get('/', (req, res) => {

@@ -35,7 +35,7 @@ class Mediasoup {
       })
     })
   }
-  async connect() {
+  async connect() {    
     const rtpCapabilities = await this.request('getRouterRtpCapabilities')
     this.device = await this.loadDevice(rtpCapabilities)
     await this.initTransports()
@@ -162,6 +162,7 @@ class Mediasoup {
     let audio = type === this.mediaType.audio
     let screen = type === this.mediaType.screen
     mediaConstraints = this.getMediaConstraints(type, deviceId)
+    
 
     if (!this.device.canProduce('video') && !audio) {
       console.error('Cannot produce video')
@@ -282,8 +283,8 @@ class Mediasoup {
           },
         }
 
-      case this.mediaType.screen:
-      /*  mediaConstraints = false
+      /*case this.mediaType.screen:
+        mediaConstraints = false
         screen = true
         break*/
       default:
@@ -383,7 +384,6 @@ class Mediasoup {
 
   removeConsumer(consumer_id) {
     this.consumers.delete(consumer_id)
-    console.log('Removing Consumer' + consumer_id)
   }
   exit(offline = false) {
     this._isOpen = false

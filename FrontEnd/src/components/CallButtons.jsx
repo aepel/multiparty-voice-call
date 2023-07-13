@@ -4,14 +4,19 @@ import RoomClient from '../lib/roomClient'
 import { Grid } from '@mui/material'
 import RecordButtons from './RecordButtons'
 import MediaDevices from './MediaDevices'
+import { useHistory } from "react-router-dom";
 
 const CallButtons = ({ room, videoDeviceId, audioDeviceId, onVideoDeviceSelected, onAudioDeviceSelected, sendStreamToServer=null }) => {
-  console.log('room', room)
+  const history = useHistory();
+  
   if (room)
     return (
       <Grid container spacing={2} style={{ margin: '20px' }}>
         <Grid item xs={2}>
-          <Button variant="contained" color="secondary" id="exitButton" onClick={() => room.exit}>
+          <Button variant="contained" color="secondary" id="exitButton" onClick={() => {
+            room.exit()
+            setTimeout(() => history.push('/endCall'),2000)
+            }}>
             <i className="fas fa-arrow-left"></i> Exit
           </Button>
         </Grid>

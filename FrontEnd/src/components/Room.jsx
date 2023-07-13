@@ -11,7 +11,7 @@ import CallButtons from './CallButtons'
 import { useParams } from 'react-router-dom'
 import ScreenRecorder from './ScreenRecorder';
 
-const Test = () => {
+const Room = () => {
   const localVideoRef = useRef()
   const { roomName, userName } = useParams()
 
@@ -23,22 +23,23 @@ const Test = () => {
 
   const addVideoBoxCallBack = useCallback(
     ({ kind, consumerId, stream, participantName }) => {
-      console.log('agregando stream', [...callers, { consumerId, stream, kind, participantName }])
       setCallers(prevCallers => {
         const elements = [...prevCallers, { consumerId, stream, kind, participantName }]
         return uniqBy(elements, el => el.consumerId)
       })
     },
-    [setCallers, callers]
+    [setCallers]
   )
   const removeVideoBoxCallBack = useCallback(
-    ({ kind, consumerId, stream }) => {
+    ({ consumerId }) => {
+      console.log('Remove callback', consumerId)
       setCallers(prevCallers => {
-        console.log('🚀 ~ file: Test.jsx:41 ~ Test ~ prevCallers:', prevCallers)
-        return remove(prevCallers, el => el.consumerId)
+        const elements=[...prevCallers]
+        return elements.filter( el => el.consumerId!==consumerId)
       })
+      console.log("callers on callback",callers)
     },
-    [setCallers, callers]
+    [setCallers,callers]
   )
   const { joinRoom, callerId, initilizeCall, videoDevices, audioDevices, sendStreamToServer } = useMeeting(
     localVideoRef,
@@ -95,9 +96,10 @@ const Test = () => {
       </Grid>
       <Grid item xs={4}></Grid>
       <Grid container spacing={2}>
+        {console.log('callers', callers)} 
         {callers.map(({ stream, producerId: consumerId, kind, participantName }) => (
-          <Grid item xs={4}>
-            <Streamer kind={kind} stream={stream} id={consumerId} currentParticipant={participantName} />
+          <Grid item xs={4} key={`grid-item-${consumerId}`}>
+            <Streamer key={`streamer-item-${consumerId}`} kind={kind} stream={stream} id={consumerId} currentParticipant={participantName} />
           </Grid>
         ))}
       </Grid>
@@ -111,4 +113,4 @@ const Test = () => {
   )
 }
 
-export default Test
+export default Room

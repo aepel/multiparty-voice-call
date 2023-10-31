@@ -1,4 +1,6 @@
-# Multi party video voice call
+# Multi party video voice call POC
+
+*** Esto es una prueba de concepto ****
 
 Este proyecto implementa un servidor Mediasoup utilizando Node.js para facilitar las llamadas de voz y video en multiusuario.
 
